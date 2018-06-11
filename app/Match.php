@@ -7,6 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Match extends Model
 {
+
+    private $options = [
+        "a", "b", "c", "d", "e"
+    ];
+
     public function prepareBeforeInsert() {
 
         /**
@@ -24,9 +29,6 @@ class Match extends Model
             if (count($teams) > 1) {
                 $this->teama = trim($teams[0]);
                 $this->teamb = trim($teams[1]);
-            } else {
-                // probably onescenario
-                $this->type = "onescenario";
             }
 
             if (is_null($this->c)) {
@@ -35,10 +37,12 @@ class Match extends Model
                 $this->c = $this->b;
                 $this->b = null;
             }
+            if (is_null($this->b) && is_null($this->c)) {
+                $this->type = "single";
+            }
 
             $today = new Carbon();
             $this->created_at = $today;
-
 
             $date = explode("\r\n", $this->date_of_game);
             $dateOfGame = trim(str_replace("\t", "", $date[0])) . $today->year;
@@ -47,7 +51,7 @@ class Match extends Model
             $datetimeOfGame = $dateOfGame . " " . $timeOfGame;
             $this->date_of_game = Carbon::createFromTimeString($datetimeOfGame);
 
-            $this->unique_name = $this->teama . ":" . $this->teamb . ":" . $this->date_of_game->getTimestamp();
+            $this->unique_name = $this->name . ":" . $this->date_of_game->getTimestamp();
 
         } catch (\Throwable $e) {
 
@@ -57,4 +61,9 @@ class Match extends Model
         }
 
     }
+
+    public function getOptions() {
+        return $this->options;
+    }
+
 }

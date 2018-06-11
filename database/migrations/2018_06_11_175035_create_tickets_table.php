@@ -17,12 +17,19 @@ class CreateTicketsTable extends Migration
             $table->increments('id');
 
             // prepared, approved, canceled, bet
-            $table->string("status")->default("prepared");
-            $table->boolean("result")->nullable();
+            $table->string("status")->default("prepared"); // prepared, bet, canceled
+            $table->string("result")->default("tobeplayed"); // tobeplayed, canceled, a, b, c, ab, bc
+            $table->string("game_type"); // oneten, onetwenty, marcingale
 
             $table->string("bet_amount");
+            $table->string("bet_rate");
             $table->string("bet_possible_win");
-            $table->string("bet_win")->nullable();
+            $table->string("bet_possible_clear_win");
+
+            $table->boolean("bet_win")->default(0); // 0, 1
+
+            $table->unsignedInteger("match_id");
+            $table->foreign('match_id')->references('id')->on('matches');
 
             $table->timestamps();
         });

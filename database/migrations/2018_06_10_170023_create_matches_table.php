@@ -18,6 +18,7 @@ class CreateMatchesTable extends Migration
 
             $table->string("category");
             $table->string("name");
+            $table->string("unique_id");
             $table->string("type");
 
             $table->string("teama")->nullable();
@@ -26,8 +27,8 @@ class CreateMatchesTable extends Migration
             $table->string("a", 10)->nullable();
             $table->string("b", 10)->nullable();
             $table->string("c", 10)->nullable();
-            $table->string("d", 10)->nullable();
-            $table->string("e", 10)->nullable();
+            $table->string("ab", 10)->nullable();
+            $table->string("bc", 10)->nullable();
             $table->dateTime("date_of_game");
 
             $table->string("unique_name");

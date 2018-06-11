@@ -11,7 +11,6 @@ namespace App\Services\Crawler;
 
 use App\Console\Commands\CrawlCommand;
 use App\Match;
-use App\Model\Entity\MatchOld;
 use App\Services\AppSettings;
 use GuzzleHttp\Client;
 use Sunra\PhpSimple\HtmlDomParser;
@@ -88,6 +87,7 @@ class Crawler
                     }
                     $match = new Match();
 
+                    $match->unique_id = $rawMatch->getAttribute("data-id");
                     $match->category = $categoryName;
                     $match->name = $rawMatch->find(".bet_item_detail_href", 0)
                         ->plaintext;
@@ -97,8 +97,8 @@ class Crawler
                         $match->a = $rawMatch->find(".add_bet_link-0", 0)->getAttribute("data-rate");
                         $match->b = $rawMatch->find(".add_bet_link-1", 0)->getAttribute("data-rate");
                         $match->c = $rawMatch->find(".add_bet_link-2", 0)->getAttribute("data-rate");
-                        $match->d = $rawMatch->find(".add_bet_link-3", 0)->getAttribute("data-rate");
-                        $match->e = $rawMatch->find(".add_bet_link-4", 0)->getAttribute("data-rate");
+                        $match->ab = $rawMatch->find(".add_bet_link-3", 0)->getAttribute("data-rate");
+                        $match->bc = $rawMatch->find(".add_bet_link-4", 0)->getAttribute("data-rate");
                     } catch (\Throwable $e) {
                     }
 
