@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    restart: always
+    ports:
+      - 80:80
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    networks:
+      - proxy
+
+  hazarder-apache:
+    image: phphazarder:latest
+    networks:
+      - default
+      - proxy_proxy
+    volumes:
+      - .:/var/www/html
+    command: /var/www/html/init.sh
+    restart: always
+    expose:
+      - 80
+    environment:
+      - VIRTUAL_HOST=hazarder.local
+
+  hazarder-mysql:
+    image: mysql:5.7
+    container_name: database
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: hazarder
+      MYSQL_USER: root
+      MYSQL_ROOT_PASSWORD: 123456
+    networks:
+      - code-network
+
+networks:
+  proxy:
+    external: false

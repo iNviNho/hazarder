@@ -1,0 +1,28 @@
+FROM php:7.2.4-apache
+
+RUN a2enmod rewrite
+
+RUN apt-get update
+
+RUN apt-get install -y git
+
+RUN apt-get install -y libicu-dev libxml2-dev libgmp-dev zlib1g-dev curl libgpgme11-dev && \
+    docker-php-ext-install \
+    gmp \
+    pdo_mysql \
+    zip \
+    intl \
+    bcmath
+
+RUN pecl install gnupg xdebug && \
+    docker-php-ext-enable gnupg xdebug
+
+COPY docker/vhost /etc/apache2/sites-enabled/000-default.conf
+
+RUN mkdir -p /deploy/vendor_override /deploy/tests
+COPY ./composer.json ./composer.phar /deploy/
+
+WORKDIR /deploy
+RUN php composer.phar install
+
+WORKDIR /var/www/html
