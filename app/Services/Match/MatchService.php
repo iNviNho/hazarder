@@ -8,20 +8,18 @@
 
 namespace App\Services\Match;
 
-
-use App\Model\Entity\MatchOld;
-use Cake\ORM\TableRegistry;
+use App\Match;
 
 class MatchService
 {
 
     public function insertGames($matches = []) {
 
-        /** @var MatchOld $match */
+        /** @var Match $match */
         foreach ($matches as $match) {
             $match->prepareBeforeInsert();
 
-            TableRegistry::get("Matches")->save($match);
+            $match->save();
         }
 
     }

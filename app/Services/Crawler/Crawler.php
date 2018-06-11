@@ -10,6 +10,7 @@ namespace App\Services\Crawler;
 
 
 use App\Console\Commands\CrawlCommand;
+use App\Match;
 use App\Model\Entity\MatchOld;
 use App\Services\AppSettings;
 use GuzzleHttp\Client;
@@ -85,7 +86,7 @@ class Crawler
                     if (strpos($rawMatchClass, "live_running_bet") !== false) {
                         continue;
                     }
-                    $match = new MatchOld();
+                    $match = new Match();
 
                     $match->category = $categoryName;
                     $match->name = $rawMatch->find(".bet_item_detail_href", 0)

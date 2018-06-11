@@ -9,10 +9,8 @@
 namespace App\Console\Commands;
 
 
-use App\Model\Entity\MatchOld;
 use App\Services\Crawler\Crawler;
 use App\Services\Match\MatchService;
-use Cake\ORM\TableRegistry;
 use Illuminate\Console\Command;
 
 class CrawlCommand extends Command
