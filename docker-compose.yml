@@ -15,7 +15,7 @@ services:
     image: phphazarder:latest
     networks:
       - default
-      - proxy_proxy
+      - proxy
     volumes:
       - .:/var/www/html
     command: /var/www/html/init.sh
@@ -36,7 +36,7 @@ services:
       MYSQL_USER: root
       MYSQL_ROOT_PASSWORD: 123456
     networks:
-      - code-network
+      - proxy
 
 networks:
   proxy:
