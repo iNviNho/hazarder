@@ -27,10 +27,8 @@ class User
     /** @var FileCookieJar */
     private $cookieJar;
 
-    public function __construct(Command $command)
+    public function __construct()
     {
-        $this->command = $command;
-
         // when working with user we should always have cookies prepared
         $this->cookieJar = new FileCookieJar("cookie_jar.txt", TRUE);
         // every request from this class will use its cookies
@@ -48,6 +46,11 @@ class User
      * @return bool
      */
     public function login() {
+
+        // if user is logged in, we can just return true
+        if ($this->isLoggedIn()) {
+            return true;
+        }
 
         //login
         $body = [
@@ -91,6 +94,14 @@ class User
         } else {
             return false;
         }
+    }
+
+    /**
+     * Return guzzle client
+     * @var Client
+     */
+    public function getUserGuzzle() {
+        return $this->guzzleClient;
     }
 
 }

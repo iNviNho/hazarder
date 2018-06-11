@@ -22,7 +22,7 @@ class LoginCommand extends Command
 
         try {
 
-            $user = new User($this);
+            $user = new User();
 
             if ($user->isLoggedIn()) {
                 $this->info("User is logged in. Nothing done.");

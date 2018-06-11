@@ -95,10 +95,19 @@ class Crawler
 
                     try {
                         $match->a = $rawMatch->find(".add_bet_link-0", 0)->getAttribute("data-rate");
+                        $match->ahref = $rawMatch->find(".add_bet_link-0", 0)->getAttribute("href");
+
                         $match->b = $rawMatch->find(".add_bet_link-1", 0)->getAttribute("data-rate");
+                        $match->bhref = $rawMatch->find(".add_bet_link-1", 0)->getAttribute("href");
+
                         $match->c = $rawMatch->find(".add_bet_link-2", 0)->getAttribute("data-rate");
+                        $match->chref = $rawMatch->find(".add_bet_link-2", 0)->getAttribute("href");
+
                         $match->ab = $rawMatch->find(".add_bet_link-3", 0)->getAttribute("data-rate");
+                        $match->abhref = $rawMatch->find(".add_bet_link-3", 0)->getAttribute("href");
+
                         $match->bc = $rawMatch->find(".add_bet_link-4", 0)->getAttribute("data-rate");
+                        $match->bchref = $rawMatch->find(".add_bet_link-4", 0)->getAttribute("href");
                     } catch (\Throwable $e) {
                     }
 

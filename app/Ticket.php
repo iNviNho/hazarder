@@ -2,10 +2,58 @@
 
 namespace App;
 
+use App\Services\AppSettings;
+use App\Services\User\User;
 use Illuminate\Database\Eloquent\Model;
+use Sunra\PhpSimple\HtmlDomParser;
 
 class Ticket extends Model
 {
+
+    /**
+     * Get the phone record associated with the user.
+     */
+    public function match()
+    {
+        return $this->belongsTo('App\Match');
+    }
+
+    /**
+     * Lets bet this ticket
+     */
+    public function bet() {
+
+        if ($this->status == "approved") {
+
+            // put this somewhere else
+//            AppSettings::setMaxFileSize();
+
+            // first insert into basket
+            $user = new User();
+            $user->login();
+            $baseURL = env("BASE_URL");
+            $baseBetURL = env("BASE_BET_URL");
+            $guzzleClient = $user->getUserGuzzle();
+
+            // insert ticket into basket
+            $href = $this->bet_option . "href";
+            $betHref = $baseURL . $this->match->$href;
+            $response = $guzzleClient->get($betHref)->getBody()->getContents();
+
+
+            // reload a website to take a submit bet link
+            $result = $guzzleClient->get($baseBetURL)->getBody()->getContents();
+
+            $html = HtmlDomParser::str_get_html($response);
+            // get bet link
+            $betLink = $html->find("#btn-accept-ticket", 0)->getAttribute("href");
+
+            // lets finally bet
+            $bet = $guzzleClient->get($baseURL . $betLink)->getBody()->getContents();
+
+            $this->save();
+        }
+    }
 
     /**
      * We try to create tickets from given matches
@@ -50,6 +98,7 @@ class Ticket extends Model
 
                 $ticket->game_type = $game_type;
 
+                $ticket->bet_option = $option;
                 $ticket->bet_amount = $bet_amount;
                 $ticket->bet_rate = $rate;
                 $ticket->bet_possible_win = bcmul($ticket->bet_amount, $ticket->bet_rate, "2");
