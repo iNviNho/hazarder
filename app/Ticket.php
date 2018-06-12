@@ -38,19 +38,31 @@ class Ticket extends Model
             // insert ticket into basket
             $href = $this->bet_option . "href";
             $betHref = $baseURL . $this->match->$href;
+            echo "Bet href pre pridanie do kosika: ". $betHref;
             $response = $guzzleClient->get($betHref)->getBody()->getContents();
 
+//            dump("Response from adding bet");
+//            echo $response;
 
             // reload a website to take a submit bet link
             $result = $guzzleClient->get($baseBetURL)->getBody()->getContents();
 
-            $html = HtmlDomParser::str_get_html($response);
-            // get bet link
-            $betLink = $html->find("#btn-accept-ticket", 0)->getAttribute("href");
+//            dump("Reloaded website");
+//            echo $result;
+
+            $html = HtmlDomParser::str_get_html($result);
+            $betLink = $html->find("#ticket-controls", 0)->getAttribute("data-confirm-ticket-url");
+
+
+//            $html = HtmlDomParser::str_get_html($response);
+//            // get bet link
+//            $betLink = $html->find("#btn-accept-ticket", 0)->getAttribute("href");
 
             // lets finally bet
-            $bet = $guzzleClient->get($baseURL . $betLink)->getBody()->getContents();
+            $bet = $guzzleClient->get($betLink)->getBody()->getContents();
 
+            echo $bet;
+            die();
             $this->save();
         }
     }
