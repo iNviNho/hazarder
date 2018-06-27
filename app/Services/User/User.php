@@ -18,8 +18,6 @@ use Sunra\PhpSimple\HtmlDomParser;
 class User
 {
 
-    /** @var Command */
-    private $command;
 
     /** @var Client */
     private $guzzleClient;
@@ -55,10 +53,8 @@ class User
         //login
         $body = [
             "form_params" => [
-                "login" => env("LOGIN_LOGIN"),
-                "password" => env("LOGIN_PASSWORD"),
-                "cid" => "",
-                "redirectTo" => env("LOGIN_REDIRECT_TO")
+                "username" => env("LOGIN_LOGIN"),
+                "password" => env("LOGIN_PASSWORD")
             ]
         ];
         $this->guzzleClient->post( env("LOGIN_URL"), $body);
@@ -83,22 +79,25 @@ class User
      */
     public function isLoggedIn() {
 
-        $response = $this->guzzleClient->get(env("BASE_URL"))->getBody()->getContents();
+        // every request from this class will use its cookies
+        $this->guzzleClient = new Client([
+            'headers' => AppSettings::getHeaders(),
+            "cookies" => $this->cookieJar,
+            'allow_redirects' => false
+        ]);
+        $response = $this->guzzleClient->get(env("LOGIN_URL_FOR_LOGGED_IN_CHECK"));
 
-        $htmlParser = HtmlDomParser::str_get_html($response);
-
-        $result = $htmlParser->find("#user-menu-toggler");
         // is he logged in
-        if (count($result) == 1) {
-            return true;
-        } else {
+        if ($response->getStatusCode() == 200) {
             return false;
+        } else {
+            return true;
         }
     }
 
     /**
      * Return guzzle client
-     * @var Client
+     * @return Client
      */
     public function getUserGuzzle() {
         return $this->guzzleClient;

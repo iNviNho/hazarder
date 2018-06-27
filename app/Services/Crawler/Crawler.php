@@ -11,7 +11,9 @@ namespace App\Services\Crawler;
 
 use App\Console\Commands\CrawlCommand;
 use App\Match;
+use App\MatchBet;
 use App\Services\AppSettings;
+use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Sunra\PhpSimple\HtmlDomParser;
 
@@ -21,6 +23,7 @@ class Crawler
     private $crawlCommand;
     private $guzzleClient;
 
+    private $rawURLs = [];
     private $rawMatches = [];
 
     /**
@@ -41,12 +44,34 @@ class Crawler
     /**
      * Lets start crawling and return
      */
-    public function start() {
+    public function crawlAndInsert() {
 
         $this->crawlCommand->info("Crawling started ...");
+
+        $this->prepareURLS();
+
         $this->parseAllTodayMatches();
 
-        $this->done();
+    }
+
+    private function prepareURLS() {
+
+        $now = Carbon::now()->getTimestamp();
+        $url = $this->guzzleClient->get(env("BASE_TODAY_GROUPS_URL"));
+
+        $html = HtmlDomParser::str_get_html($url->getBody()->getContents());
+
+        $contentDivs = $html->find("div[class=content scrollable-area]", 0)->children();
+
+        foreach ($contentDivs as $contentDiv) {
+
+            $href = $contentDiv->find("a[class=header]", 0)->getAttribute("href");
+
+            $groupURL = env("BASE_URL") . "/ajax" . $href . "&_ts=" . $now;
+            $this->rawURLs[] = $groupURL;
+        }
+
+        $this->crawlCommand->info("Prepare URLs done");
     }
 
     /**
@@ -54,80 +79,111 @@ class Crawler
      */
     private function parseAllTodayMatches() {
 
-        $start = 0;
-        while (true) {
-            $todayURL = env("TODAY_MATCHES_URL");
-            $todayURL = sprintf($todayURL, $start);
-            $start += 100;
+        foreach ($this->rawURLs as $groupURL) {
+            $result = $this->guzzleClient->get($groupURL);
 
-            $response = $this->guzzleClient->get($todayURL)->getBody()->getContents();
+            $data = [
+                "text" => $result->getBody()->getContents()
+            ];
+            $pes = view("welcome", $data)->render();
 
-            $htmlParser = HtmlDomParser::str_get_html($response);
+            $html = HtmlDomParser::str_get_html($pes);
 
-            $categories = $htmlParser->find("div[class=box def nopadding]");
+            $groups = $html->find("div[class=content-box competition sub-box]");
 
-            // no more games
-            if (count($categories) < 1) {
-                break;
-            }
-            foreach ($categories as $category) {
-                $categoryName = $category->find(".bet_table_top_box", 0)
-                    ->find("h3", 0)
-                    ->plaintext;
+            foreach ($groups as $group) {
 
-                $rawMatches = $category->find(".bet_table_holder", 0)
-                    ->find("table", 0)
-                    ->lastChild()
-                    ->children();
-                foreach ($rawMatches as $rawMatch) {
-                    // we dont want live bets
-                    $rawMatchClass = $rawMatch->getAttribute("class");
-                    if (strpos($rawMatchClass, "live_running_bet") !== false) {
-                        continue;
-                    }
+                $games = $group->find("li[class=event]");
+
+                // game is li class=event
+                foreach ($games as $game) {
+
+
                     $match = new Match();
 
-                    $match->unique_id = $rawMatch->getAttribute("data-id");
-                    $match->category = $categoryName;
-                    $match->name = $rawMatch->find(".bet_item_detail_href", 0)
-                        ->plaintext;
-                    $match->date_of_game = $rawMatch->find(".col_date", 0)->find("span", 0)->plaintext;
+                    $match->unique_id = $game->getAttribute("id");
 
-                    try {
-                        $match->a = $rawMatch->find(".add_bet_link-0", 0)->getAttribute("data-rate");
-                        $match->ahref = $rawMatch->find(".add_bet_link-0", 0)->getAttribute("href");
+                    $match->category = $group->find("h3[class=title]", 0)->plaintext;
+                    $match->category = trim(str_replace("\t", "", $match->category));
 
-                        $match->b = $rawMatch->find(".add_bet_link-1", 0)->getAttribute("data-rate");
-                        $match->bhref = $rawMatch->find(".add_bet_link-1", 0)->getAttribute("href");
+                    $match->name = trim($game->find("div[class=name]", 0)->plaintext);
 
-                        $match->c = $rawMatch->find(".add_bet_link-2", 0)->getAttribute("data-rate");
-                        $match->chref = $rawMatch->find(".add_bet_link-2", 0)->getAttribute("href");
+                    $teams = explode("&times;", $match->name);
+                    if (count($teams) > 1) {
+                        $match->teama = trim($teams[0]);
+                        // perform check for team a if it has (F)
+                        $match->teama = trim( str_replace("F()", "", $match->teama) );
+                        $match->teamb = trim($teams[1]);
+                    }
+                    $match->name = $match->teama . " vs " . $match->teamb;
 
-                        $match->ab = $rawMatch->find(".add_bet_link-3", 0)->getAttribute("data-rate");
-                        $match->abhref = $rawMatch->find(".add_bet_link-3", 0)->getAttribute("href");
+                    $today = new Carbon();
+                    $match->created_at = $today;
 
-                        $match->bc = $rawMatch->find(".add_bet_link-4", 0)->getAttribute("data-rate");
-                        $match->bchref = $rawMatch->find(".add_bet_link-4", 0)->getAttribute("href");
-                    } catch (\Throwable $e) {
+                    $match->date_of_game = $game->find("div[class=date]", 0)->plaintext;
+
+                    if (strpos($match->date_of_game, 'DNES') === false) {
+                        // it is "zajtra"
+                        $match->date_of_game = str_replace('ZAJTRA', "", $match->date_of_game);
+                        $date = explode(":", $match->date_of_game);
+
+                        $dateOfGame = new Carbon();
+                        $dateOfGame->setDateTime($today->year, $today->month, $today->day, $date[0], $date[1]);
+
+                        $match->date_of_game = $dateOfGame;
+                    } else {
+                        // it is "dnes"
+                        $match->date_of_game = str_replace('DNES', "", $match->date_of_game);
+                        $date = explode(":", $match->date_of_game);
+
+                        $dateOfGame = new Carbon();
+                        $dateOfGame->setDateTime($today->year, $today->month, $today->day, $date[0], $date[1]);
+
+                        $match->date_of_game = $dateOfGame;
+                    }
+
+                    $match->unique_name = $match->name . ":" . $match->date_of_game->getTimestamp();
+
+                    $match->save();
+
+                    $bets = $game->find(".market", 0)->children();
+                    foreach ($bets as $key => $bet) {
+
+                        $matchBet = new MatchBet();
+                        $matchBet->name = $bet->find("span[class=tip]", 0)->plaintext;
+                        $matchBet->value = trim($bet->find("span[class=odd]", 0)->plaintext);
+
+                        $matchBet->datainfo = $bet->getAttribute("data-info");
+                        $matchBet->dataodd = $bet->getAttribute("data-odd");
+
+                        $match->getMatchBets()->save($matchBet);
+                    }
+
+                    $matchBetsCount = $match->getMatchBets()->count();
+
+                    if ($matchBetsCount == 5) {
+                        $match->type = "normal";
+                    }
+                    if ($matchBetsCount == 4) {
+                        $match->type = "weird";
+                    }
+                    if ($matchBetsCount == 3) {
+                        $match->type = "simple";
+                    }
+                    if ($matchBetsCount == 2) {
+                        $match->type = "goldengame";
+                    }
+                    if ($matchBetsCount == 1) {
+                        $match->type = "single";
                     }
 
                     $this->rawMatches[] = $match;
                 }
-
             }
-
-            // we cannot be that fast
-            usleep(1000000);
         }
 
-        $this->crawlCommand->info("Prepare URLs done");
-    }
 
-    /**
-     * Function called after crawl command is done
-     */
-    private function done() {
-        $this->crawlCommand->info("Crawl command done");
+        $this->crawlCommand->info("Parse all games DONE");
     }
 
     /**

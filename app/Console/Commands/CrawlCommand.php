@@ -10,7 +10,6 @@ namespace App\Console\Commands;
 
 
 use App\Services\Crawler\Crawler;
-use App\Services\Match\MatchService;
 use Illuminate\Console\Command;
 
 class CrawlCommand extends Command
@@ -24,10 +23,7 @@ class CrawlCommand extends Command
         try {
 
             $crawler = new Crawler($this);
-            $crawler->start();
-
-            $matchService = new MatchService();
-            $matchService->insertGames($crawler->getRawMatches());
+            $crawler->crawlAndInsert();
 
             $this->info("Crawling is done");
 

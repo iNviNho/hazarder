@@ -19,27 +19,14 @@ class CreateMatchesTable extends Migration
             $table->string("category");
             $table->string("name");
             $table->string("unique_id");
-            $table->string("type");
+            $table->string("type")->nullable();
 
             $table->string("teama")->nullable();
             $table->string("teamb")->nullable();
 
-            $table->string("a", 10)->nullable();
-            $table->string("b", 10)->nullable();
-            $table->string("c", 10)->nullable();
-            $table->string("ab", 10)->nullable();
-            $table->string("bc", 10)->nullable();
-
-            $table->string("ahref")->nullable();
-            $table->string("bhref")->nullable();
-            $table->string("chref")->nullable();
-            $table->string("abhref")->nullable();
-            $table->string("bchref")->nullable();
-
-            $table->dateTime("date_of_game");
+            $table->string("date_of_game"); // should be dateatime
 
             $table->string("unique_name");
-
 
             $table->timestamps();
         });

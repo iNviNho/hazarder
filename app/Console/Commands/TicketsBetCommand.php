@@ -27,6 +27,7 @@ class TicketsBetCommand extends Command
             $ticket->bet();
         }
 
+        $this->info("Betting of " . count($tickets). " approved tickets done");
     }
 
 }

@@ -4,6 +4,7 @@ namespace App;
 
 use App\Services\AppSettings;
 use App\Services\User\User;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Sunra\PhpSimple\HtmlDomParser;
 
@@ -19,52 +20,69 @@ class Ticket extends Model
     }
 
     /**
+     * Get the phone record associated with the user.
+     */
+    public function matchbet()
+    {
+        return $this->belongsTo('App\MatchBet');
+    }
+
+    /**
      * Lets bet this ticket
      */
     public function bet() {
 
-        if ($this->status == "approved") {
+        // first insert into basket
+        $user = new User();
+        $user->login();
 
-            // put this somewhere else
-//            AppSettings::setMaxFileSize();
+        $now = Carbon::now()->getTimestamp();
+        $guzzleClient = $user->getUserGuzzle();
 
-            // first insert into basket
-            $user = new User();
-            $user->login();
-            $baseURL = env("BASE_URL");
-            $baseBetURL = env("BASE_BET_URL");
-            $guzzleClient = $user->getUserGuzzle();
+        // clear ticket & have fresh one
+        $clearTicket = $guzzleClient->get(env("BASE_TICKET_CLEAR_URL") . $now);
 
-            // insert ticket into basket
-            $href = $this->bet_option . "href";
-            $betHref = $baseURL . $this->match->$href;
-            echo "Bet href pre pridanie do kosika: ". $betHref;
-            $response = $guzzleClient->get($betHref)->getBody()->getContents();
+        // add to basket
+        $guzzleClient->get(env("BASE_BET_URL") . $this->matchbet->datainfo . "&tip_id=" . $this->matchbet->dataodd . "&value=" . trim($this->matchbet->value) . "&kind=MAIN&_ts=" . $now);
 
-//            dump("Response from adding bet");
-//            echo $response;
+        // here we can do check if we have 1 number in #fixed-ticket-link span.value -> plaintext
+        $result = $guzzleClient->get(env("BASE_TODAY_GROUPS_URL"));
 
-            // reload a website to take a submit bet link
-            $result = $guzzleClient->get($baseBetURL)->getBody()->getContents();
+        // get ticket
+        $tiket = $guzzleClient->get(env("BASE_TICKET_URL") . $now);
 
-//            dump("Reloaded website");
-//            echo $result;
+        $tiketresponse = $tiket->getBody()->getContents();
 
-            $html = HtmlDomParser::str_get_html($result);
-            $betLink = $html->find("#ticket-controls", 0)->getAttribute("data-confirm-ticket-url");
+        $tiketresponse = str_replace("\\n", "", $tiketresponse);
+        preg_match("/&transaction_id=(.*?)\"/", $tiketresponse, $matches);
 
+        $transactionID = $matches[1];
 
-//            $html = HtmlDomParser::str_get_html($response);
-//            // get bet link
-//            $betLink = $html->find("#btn-accept-ticket", 0)->getAttribute("href");
+        $data = [
+            "form_params" => [
+                "kind" => "MAIN",
+                "transaction_id" => $transactionID
+            ]
+        ];
 
-            // lets finally bet
-            $bet = $guzzleClient->get($betLink)->getBody()->getContents();
+        // BOOM BET
+        $guzzleClient->post(env("BASE_TICKET_SUBMIT_URL") . $now, $data);
 
-            echo $bet;
-            die();
-            $this->save();
-        }
+        $this->status = "bet";
+
+        // after bet we take a first ticket from tickets and set it to ticket as external link
+        $ticketSummary = $guzzleClient->get(env("BASE_TICKET_SUMMARY"));
+
+        $ticketSummaryHtml = HtmlDomParser::str_get_html($ticketSummary->getBody()->getContents());
+        $lastTicket = $ticketSummaryHtml->find("div[id=ticket-list]", 0)->children()[1];
+        $externalTicketID = $lastTicket->getAttribute("href");
+
+        preg_match("/ticket_id=(.*?)kind=MAIN/", $externalTicketID, $results);
+
+        $this->external_ticket_id = $results[1];
+
+        $this->save();
+
     }
 
     /**
@@ -72,16 +90,11 @@ class Ticket extends Model
      */
     public static function tryToCreateTicketFromMatch(Match $match) {
 
-        foreach ($match->getOptions() as $option) {
+        foreach ($match->getMatchBets()->get() as $matchBet) {
 
-            if (is_null($match->$option)) {
-                continue;
-            }
-
-            $rate = $match->$option;
+            $rate = trim($matchBet->value);
 
             $game_type = null;
-            $bet_amount = "0.5";
             // type of onetype
             // if $rate <= 1.10
             if (bccomp($rate, "1.11", 2) == -1) {
@@ -110,13 +123,15 @@ class Ticket extends Model
 
                 $ticket->game_type = $game_type;
 
-                $ticket->bet_option = $option;
-                $ticket->bet_amount = $bet_amount;
+                $ticket->bet_option = $matchBet->name;
+                // we will alter maybe one day
+                $ticket->bet_amount = "0.5";
                 $ticket->bet_rate = $rate;
                 $ticket->bet_possible_win = bcmul($ticket->bet_amount, $ticket->bet_rate, "2");
-                $ticket->bet_possible_clear_win = bcsub($ticket->bet_possible_win, $bet_amount, "2");
+                $ticket->bet_possible_clear_win = bcsub($ticket->bet_possible_win, $ticket->bet_amount, "2");
 
                 $ticket->match_id = $match->id;
+                $ticket->matchbet_id = $matchBet->id;
 
                 $ticket->save();
             }
