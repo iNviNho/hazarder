@@ -26,6 +26,9 @@ $app = new Illuminate\Foundation\Application(
 |
 */
 
+// max file size for html dom crawler, otherwise it would fail
+define("MAX_FILE_SIZE", 99999999);
+
 $app->singleton(
     Illuminate\Contracts\Http\Kernel::class,
     App\Http\Kernel::class

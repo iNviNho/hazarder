@@ -18,7 +18,6 @@ use Sunra\PhpSimple\HtmlDomParser;
 class User
 {
 
-
     /** @var Client */
     private $guzzleClient;
 
@@ -35,8 +34,6 @@ class User
             "cookies" => $this->cookieJar
         ]);
 
-        // max file size for html dom crawler, otherwise it would fail
-        define("MAX_FILE_SIZE", 99999999);
     }
 
     /**

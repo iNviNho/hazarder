@@ -140,4 +140,45 @@ class Ticket extends Model
 
     }
 
+    public static function tryToCheckResult(Ticket $ticket) {
+
+        // first insert into basket
+        $user = new User();
+        $user->login();
+
+        $url = env("BASE_TICKET_SHOW") . $ticket->external_ticket_id . "&kind=MAIN";
+
+        $ticketRequest = $user->getUserGuzzle()->get($url);
+
+        $ticketHTML = HtmlDomParser::str_get_html($ticketRequest->getBody()->getContents());
+
+        $resultClass = $ticketHTML->find("td[class=result-icon-cell]", 0)
+                    ->children[0]->getAttribute("class");
+
+        if (strpos($resultClass, "NON_WINNING") !== false) {
+            $ticket->loose();
+        } elseif (strpos($resultClass, "WINNING") !== false) {
+            $ticket->win();
+        } else {
+            // not result yet
+        }
+
+    }
+
+    private function win() {
+
+        $this->bet_win = 1;
+        $this->status = "done";
+
+        $this->save();
+    }
+
+    private function loose() {
+
+        $this->bet_win = -1;
+        $this->status = "done";
+
+        $this->save();
+    }
+
 }
