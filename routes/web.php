@@ -12,5 +12,11 @@
 */
 
 Route::get('/', function () {
-    return \Illuminate\Support\Facades\Artisan::call("tickets:checkresult");
+    return \Illuminate\Support\Facades\Artisan::call("tickets:prepare");
 });
+
+Route::get('/tickets', "TicketController@showTickets");
+
+Route::get('/tickets/approve/{ticketID}', "TicketController@approve");
+Route::get('/tickets/disapprove/{ticketID}', "TicketController@disapprove");
+Route::get('/tickets/bet/{ticketID}', "TicketController@bet");

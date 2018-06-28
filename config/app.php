@@ -167,6 +167,7 @@ return [
         /*
          * Package Service Providers...
          */
+        Aginev\Datagrid\DatagridServiceProvider::class,
 
         /*
          * Application Service Providers...

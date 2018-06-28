@@ -37,8 +37,6 @@ class Crawler
             'headers' => AppSettings::getHeaders()
         ]);
 
-        // max file size for html dom crawler, otherwise it would fail
-        define("MAX_FILE_SIZE", 99999999);
     }
 
     /**
@@ -129,6 +127,7 @@ class Crawler
 
                         $dateOfGame = new Carbon();
                         $dateOfGame->setDateTime($today->year, $today->month, $today->day, $date[0], $date[1]);
+                        $dateOfGame->addDay();
 
                         $match->date_of_game = $dateOfGame;
                     } else {

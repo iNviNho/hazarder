@@ -10,6 +10,7 @@ namespace App\Console\Commands;
 
 use App\Match;
 use App\Ticket;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 
 class TicketsPrepareCommand extends Command
