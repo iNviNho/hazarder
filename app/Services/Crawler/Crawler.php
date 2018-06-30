@@ -113,7 +113,7 @@ class Crawler
                     if (MatchService::alreadyExists($match->unique_id)) {
                         // dont parse
                         $this->crawlCommand->info("Parsed but SKIPPED game because it already exists " . $match->unique_id);
-//                        break;
+                        break;
                     }
 
                     $match->category = $group->find("h3[class=title]", 0)->plaintext;
