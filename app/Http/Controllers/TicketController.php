@@ -26,6 +26,11 @@ class TicketController extends Controller
         $grid = new Datagrid($tickets, $request->get('f', []));
 
         $grid->setColumn("id" , "ID");
+        $grid->setColumn("match_name", "Match", [
+            "wrapper" => function($value, $row) {
+                return $row->match->name;
+            }
+        ]);
         $grid->setColumn('status', 'Status', [
 //                'sortable'    => true,
 //                'has_filters' => true
