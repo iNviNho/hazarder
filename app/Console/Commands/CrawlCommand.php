@@ -8,7 +8,6 @@
 
 namespace App\Console\Commands;
 
-
 use App\Services\Crawler\Crawler;
 use Illuminate\Console\Command;
 
@@ -25,7 +24,7 @@ class CrawlCommand extends Command
             $crawler = new Crawler($this);
             $crawler->crawlAndInsert();
 
-            $this->info("Crawling is done");
+            $this->info("Crawling is DONE");
 
         } catch(\Throwable $e) {
             // we need something for logging

@@ -24,7 +24,7 @@ class CreateMatchesTable extends Migration
             $table->string("teama")->nullable();
             $table->string("teamb")->nullable();
 
-            $table->timestamp("date_of_game"); // should be dateatime
+            $table->string("date_of_game"); // should be dateatime
 
             $table->string("unique_name");
 

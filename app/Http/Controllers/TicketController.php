@@ -102,4 +102,12 @@ class TicketController extends Controller
         return redirect()->action('TicketController@showTickets');
     }
 
+    public function checkresult($ticketID) {
+
+        $ticket = Ticket::find($ticketID);
+        Ticket::tryToCheckResult($ticket);
+
+        return redirect()->action('TicketController@showTickets');
+    }
+
 }

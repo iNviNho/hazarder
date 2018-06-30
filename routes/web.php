@@ -20,3 +20,4 @@ Route::get('/tickets', "TicketController@showTickets");
 Route::get('/tickets/approve/{ticketID}', "TicketController@approve");
 Route::get('/tickets/disapprove/{ticketID}', "TicketController@disapprove");
 Route::get('/tickets/bet/{ticketID}', "TicketController@bet");
+Route::get('/tickets/checkresult/{ticketID}', "TicketController@checkresult");

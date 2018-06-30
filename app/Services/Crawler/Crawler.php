@@ -9,12 +9,13 @@
 namespace App\Services\Crawler;
 
 
-use App\Console\Commands\CrawlCommand;
 use App\Match;
 use App\MatchBet;
 use App\Services\AppSettings;
+use App\Services\Match\MatchService;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
+use Illuminate\Console\Command;
 use Sunra\PhpSimple\HtmlDomParser;
 
 class Crawler
@@ -24,13 +25,13 @@ class Crawler
     private $guzzleClient;
 
     private $rawURLs = [];
-    private $rawMatches = [];
 
     /**
      * Crawler constructor.
      * Lets setup and prepare
+     * @param $crawlCommand
      */
-    public function __construct(CrawlCommand $crawlCommand)
+    public function __construct(Command $crawlCommand)
     {
         $this->crawlCommand = $crawlCommand;
         $this->guzzleClient = new Client([
@@ -52,7 +53,12 @@ class Crawler
 
     }
 
+    /**
+     * Prepare every URL that will be parsed
+     */
     private function prepareURLS() {
+
+        $this->crawlCommand->info("Starting preparing URLs");
 
         $now = Carbon::now()->getTimestamp();
         $url = $this->guzzleClient->get(env("BASE_TODAY_GROUPS_URL"));
@@ -67,13 +73,16 @@ class Crawler
 
             $groupURL = env("BASE_URL") . "/ajax" . $href . "&_ts=" . $now;
             $this->rawURLs[] = $groupURL;
+
+            $this->crawlCommand->info("Added " . $groupURL . " to rawUrls");
         }
 
         $this->crawlCommand->info("Prepare URLs done");
     }
 
     /**
-     * Prepare every URL that will be parsed
+     * Foreach prased URL get all matches and try to construct Match
+     * and insert into DB
      */
     private function parseAllTodayMatches() {
 
@@ -96,10 +105,16 @@ class Crawler
                 // game is li class=event
                 foreach ($games as $game) {
 
-
                     $match = new Match();
 
                     $match->unique_id = $game->getAttribute("id");
+
+                    // do we have this unique_id already in DB?
+                    if (MatchService::alreadyExists($match->unique_id)) {
+                        // dont parse
+                        $this->crawlCommand->info("Parsed but SKIPPED game because it already exists " . $match->unique_id);
+                        break;
+                    }
 
                     $match->category = $group->find("h3[class=title]", 0)->plaintext;
                     $match->category = trim(str_replace("\t", "", $match->category));
@@ -176,11 +191,12 @@ class Crawler
                         $match->type = "single";
                     }
 
-                    $this->rawMatches[] = $match;
+                    $match->save();
+
+                    $this->crawlCommand->info("Parsed and added game " . $match->unique_id);
                 }
             }
         }
-
 
         $this->crawlCommand->info("Parse all games DONE");
     }

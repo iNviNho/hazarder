@@ -6,10 +6,11 @@
     "type": "project",
     "require": {
         "php": ">=7.0.0",
+        "aginev/datagrid": "1.0.*",
+        "doctrine/dbal": "^2.7",
         "fideloper/proxy": "~4.0",
         "laravel/framework": "5.6.*",
-        "laravel/tinker": "~1.0",
-        "aginev/datagrid": "1.0.*"
+        "laravel/tinker": "~1.0"
     },
     "require-dev": {
         "filp/whoops": "~2.0",
