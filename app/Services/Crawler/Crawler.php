@@ -120,6 +120,8 @@ class Crawler
                     $match->category = trim(str_replace("\t", "", $match->category));
 
                     $match->name = trim($game->find("div[class=name]", 0)->plaintext);
+                    $match->name = preg_replace("/\s\s+/", "", $match->name);
+
 
                     $teams = explode("&times;", $match->name);
                     if (count($teams) > 1) {

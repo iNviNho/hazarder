@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Aginev\Datagrid\Datagrid;
 use App\Ticket;
-use Illuminate\Http\Request;
 
 class TicketController extends Controller
 {
