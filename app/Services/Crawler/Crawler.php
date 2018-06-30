@@ -113,7 +113,7 @@ class Crawler
                     if (MatchService::alreadyExists($match->unique_id)) {
                         // dont parse
                         $this->crawlCommand->info("Parsed but SKIPPED game because it already exists " . $match->unique_id);
-                        break;
+//                        break;
                     }
 
                     $match->category = $group->find("h3[class=title]", 0)->plaintext;
@@ -157,6 +157,9 @@ class Crawler
                     }
 
                     $match->unique_name = $match->name . ":" . $match->date_of_game->getTimestamp();
+                    // remove more than 2 spaces
+                    $match->unique_name = preg_replace("/\s\s+/", "", $match->unique_name);
+                    $match->unique_name = preg_replace("/\s/", "_", $match->unique_name);
 
                     $match->save();
 
