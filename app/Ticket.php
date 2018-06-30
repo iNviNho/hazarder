@@ -2,7 +2,7 @@
 
 namespace App;
 
-use App\Services\AppSettings;
+use App\Services\Ticket\TicketService;
 use App\Services\User\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
@@ -126,6 +126,20 @@ class Ticket extends Model
 
                 $ticket = new Ticket();
 
+                $ticket->match_id = $match->id;
+                $ticket->matchbet_id = $matchBet->id;
+
+                // do we already have ticket for this game?
+                if (TicketService::ticketForMatchAlreadyExists($match->id)) {
+
+                    // is it the same one?
+                    if (TicketService::ticketForMatchAndMatchBetAlreadyExists($match->id, $matchBet->id)) {
+                        // we dont want the same one
+                        return;
+                    }
+
+                    // so far we allow creating another ticket for different match bet
+                }
                 $ticket->status = "prepared";
                 $ticket->result = "tobeplayed";
 
@@ -138,13 +152,14 @@ class Ticket extends Model
                 $ticket->bet_possible_win = bcmul($ticket->bet_amount, $ticket->bet_rate, "2");
                 $ticket->bet_possible_clear_win = bcsub($ticket->bet_possible_win, $ticket->bet_amount, "2");
 
-                $ticket->match_id = $match->id;
-                $ticket->matchbet_id = $matchBet->id;
+
 
                 $ticket->save();
+
             }
 
         }
+
 
     }
 
