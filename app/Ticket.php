@@ -98,6 +98,7 @@ class Ticket extends Model
             return false;
         }
 
+        $betOpposite = false;
         foreach ($match->getMatchBets()->get() as $matchBet) {
 
             $rate = trim($matchBet->value);
@@ -107,6 +108,7 @@ class Ticket extends Model
             // if $rate <= 1.10
             if (bccomp($rate, "1.11", 2) == -1) {
                 $game_type = "oneten";
+                $betOpposite = true;
             }
 
             // type of twotwenty
@@ -160,8 +162,60 @@ class Ticket extends Model
 
         }
 
+        // we should bet on opposite
+        if ($betOpposite) {
+
+            // lets check if there is more than 2 bets
+            if (count($match->getMatchBets()->get()) >= 2) {
+
+                $rawArray = [];
+                foreach ($match->getMatchBets()->get() as $matchBet) {
+                    $rawArray[$matchBet->id] = $matchBet->value;
+                }
+
+                $max = max($rawArray);
+
+                $matchBetID = array_search($max, $rawArray);
+
+                // lets create ticket
+                $ticket = new Ticket();
+
+                $ticket->match_id = $match->id;
+                $ticket->matchbet_id = $matchBetID;
+
+                // do we already have ticket for this game?
+                if (TicketService::ticketForMatchAlreadyExists($match->id)) {
+
+                    // is it the same one?
+                    if (TicketService::ticketForMatchAndMatchBetAlreadyExists($match->id, $matchBetID)) {
+                        // we dont want the same one
+                        return;
+                    }
+
+                    // so far we allow creating another ticket for different match bet
+                }
+                $ticket->status = "prepared";
+                $ticket->result = "tobeplayed";
+
+                $ticket->game_type = "opposite";
+
+                $ticket->bet_option = "DUNNO SO FAR"; // dont know this yet
+                // we will alter maybe one day
+                $ticket->bet_amount = "0.5";
+                $ticket->bet_rate = $max;
+                $ticket->bet_possible_win = bcmul($ticket->bet_amount, $ticket->bet_rate, "2");
+                $ticket->bet_possible_clear_win = bcsub($ticket->bet_possible_win, $ticket->bet_amount, "2");
+
+
+                $ticket->save();
+
+            }
+
+        }
+
 
     }
+
 
     public static function tryToCheckResult(Ticket $ticket) {
 
