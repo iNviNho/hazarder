@@ -26,7 +26,7 @@ class TicketsPrepareCommand extends Command
         /** @var Think about that matches should not be duplicated $matches */
         $matches = Match::all();
         foreach ($matches as $match) {
-            Ticket::tryToCreateTicketFromMatch($match);
+            Ticket::tryToCreateTicketFromMatch($match, $this);
         }
 
     }

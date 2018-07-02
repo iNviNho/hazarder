@@ -31,6 +31,13 @@ class TicketController extends Controller
                 return $row->match->name;
             }
         ]);
+        $grid->setColumn("match_category", "Category", [
+            "wrapper" => function($value, $row) {
+                return $row->match->category;
+            }
+        ]);
+        $grid->setColumn("bet_option", "Bet option");
+
         $grid->setColumn('status', 'Status', [
 //                'sortable'    => true,
 //                'has_filters' => true

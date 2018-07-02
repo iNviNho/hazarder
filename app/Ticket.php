@@ -5,6 +5,7 @@ namespace App;
 use App\Services\Ticket\TicketService;
 use App\Services\User\User;
 use Carbon\Carbon;
+use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model;
 use Sunra\PhpSimple\HtmlDomParser;
 
@@ -88,7 +89,7 @@ class Ticket extends Model
     /**
      * We try to create tickets from given matches
      */
-    public static function tryToCreateTicketFromMatch(Match $match) {
+    public static function tryToCreateTicketFromMatch(Match $match, Command $command) {
 
         // if matche date of game is less than now, fuck it
         $match->date_of_game = new Carbon($match->date_of_game);
@@ -155,9 +156,9 @@ class Ticket extends Model
                 $ticket->bet_possible_clear_win = bcsub($ticket->bet_possible_win, $ticket->bet_amount, "2");
 
 
-
                 $ticket->save();
 
+                $command->info("Created ticket " . $ticket->id . " of type " . $ticket->game_type);
             }
 
         }
@@ -165,8 +166,9 @@ class Ticket extends Model
         // we should bet on opposite
         if ($betOpposite) {
 
-            // lets check if there is more than 2 bets
-            if (count($match->getMatchBets()->get()) >= 2) {
+
+            // we take
+            if ($match->type == "normal" || $match->type == "goldengame" || $match->type == "simple") {
 
                 $rawArray = [];
                 foreach ($match->getMatchBets()->get() as $matchBet) {
@@ -177,17 +179,19 @@ class Ticket extends Model
 
                 $matchBetID = array_search($max, $rawArray);
 
+                $matchBet = MatchBet::find($matchBetID);
+
                 // lets create ticket
                 $ticket = new Ticket();
 
                 $ticket->match_id = $match->id;
-                $ticket->matchbet_id = $matchBetID;
+                $ticket->matchbet_id = $matchBet->id;
 
                 // do we already have ticket for this game?
                 if (TicketService::ticketForMatchAlreadyExists($match->id)) {
 
                     // is it the same one?
-                    if (TicketService::ticketForMatchAndMatchBetAlreadyExists($match->id, $matchBetID)) {
+                    if (TicketService::ticketForMatchAndMatchBetAlreadyExists($match->id, $matchBet->id)) {
                         // we dont want the same one
                         return;
                     }
@@ -199,16 +203,16 @@ class Ticket extends Model
 
                 $ticket->game_type = "opposite";
 
-                $ticket->bet_option = "DUNNO SO FAR"; // dont know this yet
+                $ticket->bet_option = $matchBet->name; // dont know this yet
                 // we will alter maybe one day
                 $ticket->bet_amount = "0.5";
                 $ticket->bet_rate = $max;
                 $ticket->bet_possible_win = bcmul($ticket->bet_amount, $ticket->bet_rate, "2");
                 $ticket->bet_possible_clear_win = bcsub($ticket->bet_possible_win, $ticket->bet_amount, "2");
 
-
                 $ticket->save();
 
+                $command->info("Created ticket " . $ticket->id . " of type " . $ticket->game_type);
             }
 
         }

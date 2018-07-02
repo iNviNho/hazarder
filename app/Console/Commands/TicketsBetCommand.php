@@ -25,6 +25,7 @@ class TicketsBetCommand extends Command
             ->get();
         foreach ($tickets as $ticket) {
             $ticket->bet();
+            sleep(10);
         }
 
         $this->info("Betting of " . count($tickets). " approved tickets done");

@@ -11,9 +11,12 @@
 |
 */
 
-Route::get('/', function () {
-    return \Illuminate\Support\Facades\Artisan::call("tickets:prepare");
-});
+//Route::get('/', function () {
+//    return \Illuminate\Support\Facades\Artisan::call("tickets:prepare");
+//});
+
+
+Route::get('/', "HomeController@checkLogin");
 
 Route::get('/tickets', "TicketController@showTickets");
 
@@ -21,3 +24,6 @@ Route::get('/tickets/approve/{ticketID}', "TicketController@approve");
 Route::get('/tickets/disapprove/{ticketID}', "TicketController@disapprove");
 Route::get('/tickets/bet/{ticketID}', "TicketController@bet");
 Route::get('/tickets/checkresult/{ticketID}', "TicketController@checkresult");
+Auth::routes();
+
+Route::get('/home', 'HomeController@index')->name('home');
