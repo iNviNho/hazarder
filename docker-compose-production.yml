@@ -23,7 +23,7 @@ services:
     expose:
       - 80
     environment:
-      - VIRTUAL_HOST=hazarder.local
+      - VIRTUAL_HOST=52.57.118.124
 
   hazarder-mysql:
     image: mysql:5.7

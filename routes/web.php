@@ -27,3 +27,14 @@ Route::get('/tickets/checkresult/{ticketID}', "TicketController@checkresult");
 Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
+
+
+// continuos integration
+Route::post("/git/pull/please", function() {
+
+    shell_exec("cd /var/www/html && git pull");
+
+    return response([
+        "result" => "ok"
+    ], 200);
+});
