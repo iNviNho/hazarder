@@ -35,11 +35,10 @@ Route::post("/git/pull/please", function() {
     // go to root folder and pull
     // for this command we must have upstream to certain branch
     // should work like this for noww
-    shell_exec("cd /var/www/hazarder && git pull");
-
-    shell_exec("cd /var/www/hazarder && sudo git pull");
+    $output = shell_exec("cd /var/www/hazarder && /usr/bin/git pull 2>$1");
 
     return response([
-        "result" => "ok"
+        "result" => "ok",
+        "output" => $output
     ], 200);
 });
