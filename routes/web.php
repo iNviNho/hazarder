@@ -32,6 +32,7 @@ Route::get('/home', 'HomeController@index')->name('home');
 // continuos integration
 Route::post("/git/pull/please", function() {
 
+    // go to root folder and pull
     shell_exec("cd /var/www/html && git pull");
 
     return response([
