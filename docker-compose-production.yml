@@ -2,7 +2,7 @@ version: '3'
 
 services:
   hazarder-apache:
-    image: hazarder_master:latest
+    image: hazarder_production:latest
     container_name: hazarder
     networks:
       - nginxdb_proxy
