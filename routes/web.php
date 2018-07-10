@@ -32,9 +32,13 @@ Route::get('/home', 'HomeController@index')->name('home');
 // continuos integration
 Route::post("/git/pull/please", function() {
 
-    shell_exec("cd /var/www/html && git pull");
+    // go to root folder and pull
+    // for this command we must have upstream to certain branch
+    // should work like this for now
+    $output = shell_exec("cd /var/www/hazarder && /usr/bin/git pull 2>$1");
 
     return response([
-        "result" => "ok"
+        "result" => "ok",
+        "output" => $output
     ], 200);
 });
