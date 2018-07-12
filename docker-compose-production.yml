@@ -8,7 +8,7 @@ services:
       - nginxdb_proxy
     volumes:
       - .:/var/www/html
-      - ${SSL_CERT_DIR}:/etc/ssl/private
+      - /etc/letsencrypt/live/vladino.me:/etc/ssl/private
     command: /var/www/html/init.sh
     restart: always
     ports:
