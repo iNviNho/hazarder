@@ -7,6 +7,7 @@
     SSLCertificateKeyFile /etc/ssl/private/cert.key
 
     <Directory "/var/www/html">
+        Options FollowSymLinks
         AllowOverride all
     </Directory>
 </VirtualHost>
