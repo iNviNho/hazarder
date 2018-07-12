@@ -13,6 +13,8 @@ services:
     restart: always
     expose:
       - 443
+    environment:
+      - VIRTUAL_HOST=vladino.me
 
 networks:
   nginxdb_proxy:
