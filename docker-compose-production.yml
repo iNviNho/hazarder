@@ -11,8 +11,8 @@ services:
       - /etc/letsencrypt/live/vladino.me:/etc/ssl/private
     command: /var/www/html/init.sh
     restart: always
-    ports:
-      - 443:443
+    expose:
+      - 443
 
 networks:
   nginxdb_proxy:
