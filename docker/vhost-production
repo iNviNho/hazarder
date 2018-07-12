@@ -3,8 +3,8 @@
     DocumentRoot /var/www/html
 
     SSLEngine on
-    SSLCertificateFile /etc/ssl/private/cert.crt
-    SSLCertificateKeyFile /etc/ssl/private/cert.key
+    SSLCertificateFile /etc/ssl/private/cert2.pem
+    SSLCertificateKeyFile /etc/ssl/private/privkey2.pem
 
     <Directory "/var/www/html">
         Options FollowSymLinks
