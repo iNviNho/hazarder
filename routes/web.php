@@ -11,34 +11,28 @@
 |
 */
 
-//Route::get('/', function () {
-//    return \Illuminate\Support\Facades\Artisan::call("tickets:prepare");
-//});
-
-
+/**
+ * Starting point for every blank request
+ */
 Route::get('/', "HomeController@checkLogin");
 
-Route::get('/tickets', "TicketController@showTickets");
 
-Route::get('/tickets/approve/{ticketID}', "TicketController@approve");
-Route::get('/tickets/disapprove/{ticketID}', "TicketController@disapprove");
-Route::get('/tickets/bet/{ticketID}', "TicketController@bet");
-Route::get('/tickets/checkresult/{ticketID}', "TicketController@checkresult");
-Auth::routes();
+/**
+ * Authorized access
+ */
+Route::group(["middleware" => ["auth", "authorized"]], function() {
+    Route::get('/home', 'HomeController@index')->name('home');
 
-Route::get('/home', 'HomeController@index')->name('home');
+    Route::get('/tickets', "TicketController@showTickets");
 
+    Route::get('/tickets/approve/{ticketID}', "TicketController@approve");
+    Route::get('/tickets/disapprove/{ticketID}', "TicketController@disapprove");
+    Route::get('/tickets/bet/{ticketID}', "TicketController@bet");
+    Route::get('/tickets/checkresult/{ticketID}', "TicketController@checkresult");
 
-// continuos integration
-Route::post("/git/pull/please", function() {
-
-    // go to root folder and pull
-    // for this command we must have upstream to certain branch
-    // should work like this for now
-    $output = shell_exec("cd /var/www/hazarder && /usr/bin/git pull 2>$1");
-
-    return response([
-        "result" => "ok",
-        "output" => $output
-    ], 200);
 });
+
+/**
+ * Register LOGIN & REGISTER routes
+ */
+Auth::routes();
