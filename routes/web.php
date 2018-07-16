@@ -21,6 +21,7 @@ Route::get('/', "HomeController@checkLogin");
  * Authorized access
  */
 Route::group(["middleware" => ["auth", "authorized"]], function() {
+
     Route::get('/home', 'HomeController@index')->name('home');
 
     Route::get('/tickets', "TicketController@showTickets");
@@ -29,6 +30,8 @@ Route::group(["middleware" => ["auth", "authorized"]], function() {
     Route::get('/tickets/disapprove/{ticketID}', "TicketController@disapprove");
     Route::get('/tickets/bet/{ticketID}', "TicketController@bet");
     Route::get('/tickets/checkresult/{ticketID}', "TicketController@checkresult");
+
+    Route::get("/matches", "MatchesController@showMatches");
 
     Route::get("/settings", "UserController@showSettings");
     Route::post("/settings", "UserController@updateSettings");

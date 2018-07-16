@@ -6,7 +6,7 @@
             <div class="col-md-12">
 
                 <div class="basic-content">
-                    <h1>Tickets</h1>
+                    <h1>Matches</h1>
 
                     <div>
                         {!! $grid->show('grid-table') !!}

@@ -2,6 +2,10 @@
     background-color: rgba(0,0, 0, .6);
 }
 
+.navbar-laravel .dropdown-menu a {
+    color: #000!important;
+}
+
 .lenka-bg {
     background-image: url("/images/background.jpg");
     min-height: 100vh;
@@ -16,4 +20,18 @@
 
 .lenka-bg .card {
     background-color: rgba(255,255,255,.9);
+}
+
+.my-container {
+    max-width: 90%!important;;
+}
+
+.basic-content {
+    padding: 20px;
+    background: rgba(255,255,255,.9);
+}
+
+.matchbettable td {
+    padding: 5px;
+    text-align: center;
 }

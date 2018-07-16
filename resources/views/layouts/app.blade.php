@@ -66,15 +66,15 @@
                                 </a>
 
                                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-                                    <a class="dropdown-item" href="/dashboard" > Dashboard</a>
-                                    <a class="dropdown-item" href="/games" > Games</a>
+                                    <a class="dropdown-item" href="/dashboard" > <strong>Dashboard</strong></a>
+                                    <a class="dropdown-item" href="/matches" > Matches</a>
                                     <a class="dropdown-item" href="/tickets" > Tickets</a>
                                     <a class="dropdown-item" href="/settings" > Settings</a>
 
                                     <a class="dropdown-item" href="{{ route('logout') }}"
                                        onclick="event.preventDefault();
                                                      document.getElementById('logout-form').submit();">
-                                        {{ __('Logout') }}
+                                        <i>{{ __('Logout') }}</i>
                                     </a>
 
                                     <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">

@@ -89,6 +89,9 @@ class Crawler
         foreach ($this->rawURLs as $groupURL) {
             $result = $this->guzzleClient->get($groupURL);
 
+            preg_match("/stavkovanie\/(.*?)\?filter/", $groupURL, $sport);
+            $sport = $sport[1];
+
             $data = [
                 "text" => $result->getBody()->getContents()
             ];
@@ -107,13 +110,15 @@ class Crawler
 
                     $match = new Match();
 
+                    $match->sport = $sport;
+
                     $match->unique_id = $game->getAttribute("id");
 
                     // do we have this unique_id already in DB?
                     if (MatchService::alreadyExists($match->unique_id)) {
                         // dont parse
                         $this->crawlCommand->info("Parsed but SKIPPED game because it already exists " . $match->unique_id);
-                        break;
+                        continue;
                     }
 
                     $match->category = $group->find("h3[class=title]", 0)->plaintext;
