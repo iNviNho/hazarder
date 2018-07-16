@@ -55,4 +55,14 @@ $app->singleton(
 |
 */
 
+function assetn($path) {
+
+    $secure = false;
+    if (env("APP_ENV") == "production") {
+        $secure = true;
+    }
+
+    return asset($path, $secure);
+}
+
 return $app;
