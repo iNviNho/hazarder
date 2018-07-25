@@ -91,14 +91,6 @@ class Ticket extends Model
      */
     public static function tryToCreateTicketFromMatch(Match $match, Command $command) {
 
-        // if matche date of game is less than now, fuck it
-        $match->date_of_game = new Carbon($match->date_of_game);
-        $now = Carbon::now();
-
-        if ($match->date_of_game->getTimestamp() < $now->getTimestamp()) {
-            return false;
-        }
-
         $betOpposite = false;
         foreach ($match->getMatchBets()->get() as $matchBet) {
 
