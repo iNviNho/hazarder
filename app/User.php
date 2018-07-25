@@ -6,6 +6,15 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 class User extends Authenticatable
 {
     use Notifiable;
+
+    /**
+     * Get the comments for the blog post.
+     */
+    public function getSettings()
+    {
+        return $this->hasMany('App\Settings');
+    }
+
     /**
      * The attributes that are mass assignable.
      *
