@@ -6,7 +6,7 @@ RUN apt-get update
 
 RUN apt-get install -y git
 
-RUN apt-get install -y libicu-dev libxml2-dev libgmp-dev zlib1g-dev curl libgpgme11-dev && \
+RUN apt-get install -y cron curl libicu-dev libxml2-dev libgmp-dev zlib1g-dev libgpgme11-dev && \
     docker-php-ext-install \
     gmp \
     pdo_mysql \

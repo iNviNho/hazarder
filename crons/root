@@ -1,0 +1,7 @@
+#35 5 * * * /usr/local/bin/php /var/www/html/artisan matches:get-results >> /var/www/log 2>&1
+45 5 * * * /usr/local/bin/php /var/www/html/artisan tickets:checkresult >> /var/www/log 2>&1
+0 6 * * * /usr/local/bin/php /var/www/html/artisan crawl >> /var/www/log 2>&1
+10 6 * * * /usr/local/bin/php /var/www/html/artisan tickets:prepare >> /var/www/log 2>&1
+#* * * * * /usr/local/bin/php /var/www/html/artisan tickets:approve >> /var/www/log 2>&1
+20 6 * * * /usr/local/bin/php /var/www/html/artisan tickets:bet >> /var/www/log 2>&1
+# * * * /usr/local/bin/php /var/www/html/artisan clear >> /var/www/log 2>&1

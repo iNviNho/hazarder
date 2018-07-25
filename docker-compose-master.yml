@@ -8,12 +8,13 @@ services:
       - nginxdb_proxy
     volumes:
       - .:/var/www/html
-    command: /var/www/html/init.sh
+    command: /var/www/html/init-master.sh
     restart: always
     expose:
       - 80
     environment:
       - VIRTUAL_HOST=hazarder.local
+      - TZ=Europe/Vienna
 
 networks:
   nginxdb_proxy:
