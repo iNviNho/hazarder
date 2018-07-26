@@ -11,7 +11,6 @@ namespace App\Services\User;
 use App\Services\AppSettings;
 use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\FileCookieJar;
-use Illuminate\Support\Facades\Auth;
 
 class User
 {
@@ -22,10 +21,14 @@ class User
     /** @var FileCookieJar */
     private $cookieJar;
 
-    public function __construct()
+    /** @var \App\User */
+    private $user;
+
+    public function __construct(\App\User $user)
     {
+        $this->user = $user;
         // when working with user we should always have cookies prepared
-        $this->cookieJar = new FileCookieJar("cookie_jar.txt", TRUE);
+        $this->cookieJar = new FileCookieJar("cookie_jar_" . $this->user->id . ".txt", TRUE);
         // every request from this class will use its cookies
         $this->guzzleClient = new Client([
             'headers' => AppSettings::getHeaders(),
@@ -45,14 +48,11 @@ class User
             return true;
         }
 
-        $settings = Auth::user()->getSettings();
-        dd($settings);
-
         //login
         $body = [
             "form_params" => [
-                "username" => env("LOGIN_LOGIN"),
-                "password" => env("LOGIN_PASSWORD")
+                "username" => $this->user->getSettings()->first()->username,
+                "password" => $this->user->getSettings()->first()->password,
             ]
         ];
         $this->guzzleClient->post( env("LOGIN_URL"), $body);

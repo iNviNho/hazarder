@@ -17,7 +17,7 @@ class NewTicketsUsersTable extends Migration
 
             $table->increments('id');
 
-            $table->string('status')->default("approved"); //  approved, canceled, bet, betdone
+            $table->string('status')->default("approved"); //  approved, canceled, bet, betanddone
             $table->string("external_ticket_id")->nullable();
 
             $table->unsignedInteger("user_id");

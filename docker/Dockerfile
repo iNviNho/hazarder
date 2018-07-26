@@ -14,6 +14,8 @@ RUN apt-get install -y cron curl libicu-dev libxml2-dev libgmp-dev zlib1g-dev li
     intl \
     bcmath
 
+RUN apt-get install -y nano
+
 RUN pecl install gnupg xdebug && \
     docker-php-ext-enable gnupg xdebug
 
