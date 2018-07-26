@@ -135,7 +135,7 @@ class UserTicket extends Model
 
     private function loose() {
 
-        $this->bet_win = 0;
+        $this->bet_win = -1;
         $this->status = "betanddone";
 
         $this->save();

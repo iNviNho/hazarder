@@ -24,6 +24,7 @@ Route::group(["middleware" => ["auth", "authorized"]], function() {
 
     Route::get('/home', 'HomeController@index')->name('home');
 
+    Route::get('/my-tickets', "TicketController@showMyTickets");
     Route::get('/tickets', "TicketController@showTickets");
 
     Route::get('/tickets/approve/{ticketID}', "TicketController@approve");

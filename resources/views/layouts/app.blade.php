@@ -19,6 +19,7 @@
     <!-- Fonts -->
     <link rel="dns-prefetch" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css?family=Raleway:300,400,600" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
 
     <!-- Styles -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
@@ -69,6 +70,7 @@
                                     <a class="dropdown-item" href="/dashboard" > <strong>Dashboard</strong></a>
                                     <a class="dropdown-item" href="/matches" > Matches</a>
                                     <a class="dropdown-item" href="/tickets" > Tickets</a>
+                                    <a class="dropdown-item" href="/my-tickets" > My Tickets</a>
                                     <a class="dropdown-item" href="/settings" > Settings</a>
 
                                     <a class="dropdown-item" href="{{ route('logout') }}"
