@@ -8,7 +8,8 @@
 
 namespace App\Console\Commands;
 
-use App\Ticket;
+use App\User;
+use App\UserTicket;
 use Illuminate\Console\Command;
 
 class TicketsBetCommand extends Command
@@ -21,14 +22,21 @@ class TicketsBetCommand extends Command
 
         $this->info("Start betting approved tickets");
 
-        $tickets = Ticket::where("status", "approved")
-            ->get();
-        foreach ($tickets as $ticket) {
-            $ticket->bet();
+        $users = User::all()
+            ->where("is_authorized", "=", "1");
+
+        foreach ($users as $user) {
+
+            $tickets = UserTicket::all()
+                ->where("status", "=", "approved")
+                ->where("user_id", "=", $user->id);
+            foreach ($tickets as $userTicket) {
+                $userTicket->bet($this);
+                $this->info("Betting of UserTicket with ID: " . $userTicket->id . " successfully done.");
+                sleep(10);
+            }
             sleep(10);
         }
-
-        $this->info("Betting of " . count($tickets). " approved tickets done");
     }
 
 }

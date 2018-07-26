@@ -9,12 +9,13 @@ services:
     volumes:
       - .:/var/www/html
       - /etc/letsencrypt/archive/vladino.me:/etc/ssl/private
-    command: /var/www/html/init.sh
+    command: /var/www/html/init-production.sh
     restart: always
     ports:
       - 443
     environment:
       - VIRTUAL_HOST=vladino.me
+      - TZ=Europe/Vienna
 
 networks:
   nginxdb_proxy:

@@ -23,8 +23,8 @@ class TicketsPrepareCommand extends Command
 
         $this->info("Prepare tickets from todays matches");
 
-        /** @var Think about that matches should not be duplicated $matches */
-        $matches = Match::all();
+        $matches = Match::all()
+            ->where('date_of_game', '>=', Carbon::now()->format("Y-m-d H:i:s"));
         foreach ($matches as $match) {
             Ticket::tryToCreateTicketFromMatch($match, $this);
         }
