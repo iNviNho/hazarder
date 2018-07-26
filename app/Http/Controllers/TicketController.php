@@ -19,7 +19,7 @@ class TicketController extends Controller
 
     private function getTicketsGrid() {
 
-        $tickets = Ticket::all();
+        $tickets = Ticket::orderBy('id', "desc")->get();
 
         $request = app("request");
 

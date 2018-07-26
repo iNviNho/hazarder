@@ -8,12 +8,10 @@
 
 namespace App\Services\User;
 
-
 use App\Services\AppSettings;
 use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\FileCookieJar;
-use Illuminate\Console\Command;
-use Sunra\PhpSimple\HtmlDomParser;
+use Illuminate\Support\Facades\Auth;
 
 class User
 {
@@ -46,6 +44,9 @@ class User
         if ($this->isLoggedIn()) {
             return true;
         }
+
+        $settings = Auth::user()->getSettings();
+        dd($settings);
 
         //login
         $body = [
