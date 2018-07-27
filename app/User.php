@@ -51,8 +51,7 @@ class User extends Authenticatable
                     $q->where('game_type', '=', $GAME_TYPE);
                 })
                 ->where("user_id", "=", $this->id)
-                ->where("status", "=", "approved")
-                ->orWhere("status", "=", "bet")
+                ->where("status", "=", "bet")
                 ->get()->count();
             $allowedGameTypesToBet[$GAME_TYPE] -= $betTicketsCount;
         }
