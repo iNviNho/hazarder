@@ -201,9 +201,16 @@ class Crawler
                         $match->type = "single";
                     }
 
-                    $match->save();
+                    // we do not want single game types and weird types anymore
+                    if ($match->type == "weird" || $match->type == "single") {
+                        $match->delete();
+                        $this->crawlCommand->info("Parsed but deleted " . $match->type .  " game type for " . $match->unique_id);
+                    } else {
+                        $match->save();
+                        $this->crawlCommand->info("Parsed and added game " . $match->unique_id);
+                    }
 
-                    $this->crawlCommand->info("Parsed and added game " . $match->unique_id);
+
                 }
             }
         }
