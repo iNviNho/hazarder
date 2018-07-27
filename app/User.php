@@ -3,6 +3,7 @@ namespace App;
 
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Sunra\PhpSimple\HtmlDomParser;
 
 class User extends Authenticatable
 {
@@ -85,6 +86,30 @@ class User extends Authenticatable
 
         }
 
+    }
+
+    public function updateCredit($command) {
+
+        // first insert into basket
+        $user = new \App\Services\User\User($this);
+        if (!$user->login()) {
+            $command->info("User with ID: " . $this->id . " was not successfully logged in :( RIP");
+            return;
+        }
+        $guzzleClient = $user->getUserGuzzle();
+
+        // clear ticket & have fresh one
+        $baseUrl = $guzzleClient->get(env("BASE_URL"));
+
+        $ticketSummaryHtml = HtmlDomParser::str_get_html($baseUrl->getBody()->getContents());
+
+        $credit = $ticketSummaryHtml->find("strong[class=credit]", 0)->plaintext;
+
+        $this->credit = $credit;
+
+        $this->save();
+
+        $command->info("Users credit for ID: " . $this->id . " was successfully updated to " . $credit);
     }
 
 }

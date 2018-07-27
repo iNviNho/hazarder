@@ -35,9 +35,12 @@ class TicketsCheckResultCommand extends Command
                 $this->info("Checking result of UserTicket with ID: " . $userTicket->id . " successfully ran.");
 
             }
+
+            $user->updateCredit($this);
         }
 
         $this->info("Check for check results was done.");
+
     }
 
 }

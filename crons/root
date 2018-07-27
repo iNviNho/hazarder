@@ -5,4 +5,4 @@
 10 6 * * *   /usr/local/bin/php /var/www/html/artisan tickets:prepare     >> /var/www/html/storage/logs/tickets_prepare.log 2>&1
 15 6 * * *   /usr/local/bin/php /var/www/html/artisan tickets:approve     >> /var/www/html/storage/logs/tickets_approve.log 2>&1
 20 6 * * *   /usr/local/bin/php /var/www/html/artisan tickets:bet         >> /var/www/html/storage/logs/tickets_bet.log 2>&1
-* * * * *    echo "tick-tack"                                             >> /var/www/html/storage/logs/tick-tack.log 2>&1
+* * * * *    date                                                         >> /var/www/html/storage/logs/tick-tack.log 2>&1
