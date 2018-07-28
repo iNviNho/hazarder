@@ -121,8 +121,13 @@ class Crawler
                         continue;
                     }
 
-                    $match->category = $group->find("h3[class=title]", 0)->plaintext;
-                    $match->category = trim(str_replace("\t", "", $match->category));
+                    $match->category = $group->find("h3[class=title]", 0);
+                    if (!is_null($match->category)) {
+                        $match->category = $match->category->plaintext;
+                        $match->category = trim(str_replace("\t", "", $match->category));
+                    } else {
+                        $match->category = "-";
+                    }
 
                     $match->name = trim($game->find("div[class=name]", 0)->plaintext);
                     $match->name = preg_replace("/\s\s+/", "", $match->name);

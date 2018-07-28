@@ -71,6 +71,10 @@ class User extends Authenticatable
                 $userTicket->bet_option = $ticket->matchbet->name;
                 $userTicket->bet_amount = $userSettings->bet_amount;
                 $userTicket->bet_rate = $ticket->matchbet->value;
+                if ( ($userTicket->bet_rate == "") || ($userTicket->bet_rate == " ")) {
+                    // hotfix for bad bet_rates
+                    continue;
+                }
                 $userTicket->bet_possible_win = bcmul($userTicket->bet_amount, $userTicket->bet_rate, "2");
                 $userTicket->bet_possible_clear_win = bcsub($userTicket->bet_possible_win, $userTicket->bet_amount, "2");
 
