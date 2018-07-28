@@ -50,7 +50,7 @@ class Ticket extends Model
             $game_type = null;
             // type of onetype
             // if $rate <= 1.10
-            if (bccomp($rate, "1.11", 2) == -1) {
+            if ( (bccomp($rate, "1.11", 2) == -1) && ($rate != "")) {
                 $game_type = "oneten";
                 $betOppositeMatchBetID = $matchBet->id;
             }
