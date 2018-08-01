@@ -24,9 +24,12 @@ class TicketsApproveCommand extends Command
 
         $this->info("Approve tickets for all users for prepare tickets");
 
-        $tickets = Ticket::all()
+        $tickets = Ticket::select(["tickets.*", "matches.date_of_game"])
+            ->join('matches', 'matches.id', '=', 'tickets.match_id')
             ->where("status", "=", "prepared")
-            ->where("game_type", "!=", "marcingale");
+            ->where("game_type", "!=", "marcingale")
+            ->where('date_of_game', '>=', Carbon::now()->addMinutes(15)->format("Y-m-d H:i:s"))
+            ->orderBy("date_of_game", "asc");
 
         $users = User::all()
             ->where("is_authorized", "=", "1");
