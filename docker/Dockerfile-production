@@ -21,8 +21,8 @@ RUN pecl install gnupg xdebug && \
 
 COPY docker/vhost-production /etc/apache2/sites-enabled/000-default.conf
 
-RUN mkdir -p /deploy/vendor_override /deploy/tests
-COPY ./composer.json ./composer.phar /deploy/
+RUN mkdir -p /deploy
+COPY ./composer.lock  ./composer.json ./composer.phar /deploy/
 
 WORKDIR /deploy
 RUN php composer.phar install
