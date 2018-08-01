@@ -1,2 +1,2 @@
 #!/bin/sh
-cd /var/www/hazarder/ && git pull
+cd /var/www/hazarder/ && git pull && ./deploy-production.sh
