@@ -52,12 +52,15 @@ class User extends Authenticatable
                     $q->where('game_type', '=', $GAME_TYPE);
                 })
                 ->where("user_id", "=", $this->id)
-                ->where("status", "=", "bet")
+                ->where(function ($q) {
+                    $q->where("status", "=", "bet")
+                        ->orWhere("status", "=", "approved");
+                })
                 ->get()->count();
             $allowedGameTypesToBet[$GAME_TYPE] -= $betTicketsCount;
         }
 
-        foreach ($tickets as $ticket) {
+        foreach ($tickets->get() as $ticket) {
 
             // can we approve this ticket for this game type?
             if ($allowedGameTypesToBet[$ticket->game_type] > 0) {
