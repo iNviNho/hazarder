@@ -33,9 +33,15 @@
                                 <input type="text" class="form-control" name="max_onetwenty" value="{{$settings->max_onetwenty}}" required autofocus>
                             </div>
                         </div><div class="form-group row">
-                            <label for="email" class="col-sm-4 col-form-label text-md-right">Max one marcingale open bets</label>
+                            <label for="email" class="col-sm-4 col-form-label text-md-right">Max marcingale open bets</label>
                             <div class="col-md-6">
                                 <input type="text" class="form-control" name="max_marcingale" value="{{$settings->max_marcingale}}" required autofocus>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="email" class="col-sm-4 col-form-label text-md-right">Max marcingale level for fail</label>
+                            <div class="col-md-6">
+                                <input type="text" class="form-control" name="max_marcingale_level" value="{{$settings->max_marcingale_level}}" required autofocus>
                             </div>
                         </div>
                         <div class="form-group row">

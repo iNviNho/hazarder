@@ -33,7 +33,8 @@ class TicketsBetCommand extends Command
             foreach ($tickets as $userTicket) {
                 $userTicket->bet($this);
                 $this->info("Betting of UserTicket with ID: " . $userTicket->id . " successfully done.");
-                sleep(10);
+                $random = rand(10,20);
+                sleep($random);
             }
             sleep(10);
         }
