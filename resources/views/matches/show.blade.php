@@ -9,7 +9,7 @@
                     <h1>Matches</h1>
 
                     <div>
-                        {!! $grid->show('grid-table') !!}
+                        {!! $grid->render() !!}
                     </div>
                 </div>
 

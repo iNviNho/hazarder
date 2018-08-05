@@ -167,7 +167,8 @@ return [
         /*
          * Package Service Providers...
          */
-        Aginev\Datagrid\DatagridServiceProvider::class,
+        \Nayjest\Grids\ServiceProvider::class,
+        \Collective\Html\HtmlServiceProvider::class,
 
         /*
          * Application Service Providers...
@@ -226,6 +227,10 @@ return [
         'URL' => Illuminate\Support\Facades\URL::class,
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
+        'Form'  => 'Collective\Html\FormFacade',
+        'HTML'  => 'Collective\Html\HtmlFacade',
+        'Grids'     => 'Nayjest\Grids\Grids',
+        'Input' => 'Illuminate\Support\Facades\Input',
 
     ],
 
