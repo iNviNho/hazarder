@@ -45,13 +45,17 @@ class UserTicket extends Model
         $guzzleClient = $user->getUserGuzzle();
 
         // clear ticket & have fresh one
-        $clearTicket = $guzzleClient->get(env("BASE_TICKET_CLEAR_URL") . $now);
+        $guzzleClient->get(env("BASE_TICKET_CLEAR_URL") . $now);
 
         // add to basket
         $guzzleClient->get(env("BASE_BET_URL") . $this->ticket->matchbet->datainfo . "&tip_id=" . $this->ticket->matchbet->dataodd . "&value=" . trim($this->bet_rate) . "&kind=MAIN&_ts=" . $now);
 
         // here we can do check if we have 1 number in #fixed-ticket-link span.value -> plaintext
 //        $result = $guzzleClient->get(env("BASE_TODAY_GROUPS_URL"));
+
+        // set stake and reset $now
+        $now = Carbon::now()->getTimestamp();
+        $guzzleClient->get(env("BASE_SET_STAKE_URL") . "&_ts=" . $now . "&stake=" . trim($this->bet_amount));
 
         // get ticket
         $bettingTicket = $guzzleClient->get(env("BASE_TICKET_URL") . $now);
