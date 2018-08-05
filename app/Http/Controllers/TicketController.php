@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Aginev\Datagrid\Datagrid;
 use App\Ticket;
 use App\UserTicket;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Nayjest\Grids\Components\ColumnHeadersRow;
 use Nayjest\Grids\Components\FiltersRow;
@@ -179,18 +180,23 @@ class TicketController extends Controller
                 ->setLabel('Status')
                 ->setSortable(true),
 
-            (new FieldConfig())->setName('bet_option')->setLabel('Bet option'),
+//            (new FieldConfig())->setName('bet_option')->setLabel('Bet option'),
             (new FieldConfig())->setName('bet_amount')->setLabel('Bet amount'),
             (new FieldConfig())->setName('bet_rate')->setLabel('Bet rate'),
             (new FieldConfig())->setName('bet_possible_win')->setLabel('Bet possible win'),
             (new FieldConfig())->setName('bet_possible_clear_win')->setLabel('Bet possible clear win'),
-            (new FieldConfig())->setName('bet_win')->setLabel('Bet win'),
 
+            (new FieldConfig())
+                ->setName('gametime')
+                ->setLabel('Gametime')
+                ->setCallback(function ($val, $row) {
+                    return Carbon::createFromTimeString($row->getSrc()->ticket->match->date_of_game)->format("d.m.Y H:i");
+                }),
             (new FieldConfig())
                 ->setName('created_at')
                 ->setLabel('Created at')
                 ->setCallback(function ($val, $row) {
-                    return $row->getSrc()->created_at;
+                    return $row->getSrc()->created_at->format("d.m.Y H:i");
                 }),
             (new FieldConfig())
                 ->setName('result')

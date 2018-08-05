@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Ticket;
 use App\UserTicket;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
@@ -14,25 +16,44 @@ class DashboardController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request, $name = null)
     {
         $user = Auth::user();
 
         $gameTypeData = [];
 
+        if ($name == "today") {
+            $from = Carbon::now()->setTime(0,0);
+            $to = Carbon::now();
+        } elseif ($name == "yesterday") {
+            $from = Carbon::now()->subDay(1)->setTime(0,0);
+            $to = Carbon::now()->subDay(1)->setTime(23,59);
+        } elseif ($name == "last24hours") {
+            $from = Carbon::now()->subHours(24);
+            $to = Carbon::now();
+        } else {
+            $from = Carbon::now()->subYear(10);
+            $to = Carbon::now();
+        }
+
+
+
         // ALL as GAME TYPE
         $betTickets = UserTicket::where("user_id", "=", $user->id)
             ->where("status", "=", "betanddone")
+            ->whereBetween("created_at", [$from, $to])
             ->count();
 
         $wonTickets = UserTicket::where("user_id", "=", $user->id)
             ->where("status", "=", "betanddone")
             ->where("bet_win", "=", "1")
+            ->whereBetween("created_at", [$from, $to])
             ->count();
 
         $lostTickets = UserTicket::where("user_id", "=", $user->id)
             ->where("status", "=", "betanddone")
             ->where("bet_win", "=", "-1")
+            ->whereBetween("created_at", [$from, $to])
             ->count();
 
         // calculate ratio
@@ -46,10 +67,12 @@ class DashboardController extends Controller
         // get how much we bet
         $sumOfBetAmounts = UserTicket::where("user_id", "=", $user->id)
             ->where("status", "=", "betanddone")
+            ->whereBetween("created_at", [$from, $to])
             ->sum("bet_amount");
         $sumOfWonAmounts = UserTicket::where("user_id", "=", $user->id)
             ->where("status", "=", "betanddone")
             ->where("bet_win", "=", "1")
+            ->whereBetween("created_at", [$from, $to])
             ->sum("bet_possible_win");
         $profit = bcsub($sumOfWonAmounts, $sumOfBetAmounts, 2);
 
@@ -70,6 +93,7 @@ class DashboardController extends Controller
                 ->whereHas('Ticket', function($q) use($gameType) {
                     $q->where('game_type', "=", $gameType);
                 })
+                ->whereBetween("created_at", [$from, $to])
                 ->count();
 
             $wonTickets = UserTicket::where("user_id", "=", $user->id)
@@ -78,6 +102,7 @@ class DashboardController extends Controller
                     $q->where('game_type', "=", $gameType);
                 })
                 ->where("bet_win", "=", "1")
+                ->whereBetween("created_at", [$from, $to])
                 ->count();
 
             $lostTickets = UserTicket::where("user_id", "=", $user->id)
@@ -86,6 +111,7 @@ class DashboardController extends Controller
                     $q->where('game_type', "=", $gameType);
                 })
                 ->where("bet_win", "=", "-1")
+                ->whereBetween("created_at", [$from, $to])
                 ->count();
 
             // calculate ratio
@@ -103,6 +129,7 @@ class DashboardController extends Controller
                 ->whereHas('Ticket', function($q) use($gameType) {
                     $q->where('game_type', "=", $gameType);
                 })
+                ->whereBetween("created_at", [$from, $to])
                 ->sum("bet_amount");
             $sumOfWonAmounts = UserTicket::where("user_id", "=", $user->id)
                 ->where("status", "=", "betanddone")
@@ -110,6 +137,7 @@ class DashboardController extends Controller
                     $q->where('game_type', "=", $gameType);
                 })
                 ->where("bet_win", "=", "1")
+                ->whereBetween("created_at", [$from, $to])
                 ->sum("bet_possible_win");
             $profit = bcsub($sumOfWonAmounts, $sumOfBetAmounts, 2);
 
@@ -125,7 +153,8 @@ class DashboardController extends Controller
         }
 
         return view("user.dashboard", [
-            "gameTypeData" => $gameTypeData
+            "gameTypeData" => $gameTypeData,
+            "name" => $name
         ]);
     }
 }

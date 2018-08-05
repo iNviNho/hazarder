@@ -9,7 +9,17 @@
             <div class="col-md-12">
 
                 <div class="basic-content">
-                    <h1>Dashboard</h1>
+                    <div class="row">
+                        <h1 class="col-lg-9 col-md-6">Dashboard</h1>
+                        <div class="col-lg-3 col-md-6">
+                            <ul class="list-group text-right dashboardul">
+                                <li class="list-group-item list-group-item-action @if ($name == null) active @endif"><a href="/dashboard">ALL</a></li>
+                                <li class="list-group-item list-group-item-action @if ($name == "today") active @endif"><a href="/dashboard/today">TODAY</a></li>
+                                <li class="list-group-item list-group-item-action @if ($name == "yesterday") active @endif"><a href="/dashboard/yesterday">YESTERDAY</a></li>
+                                <li class="list-group-item list-group-item-action @if ($name == "last24hours") active @endif"><a href="/dashboard/last24hours">LAST 24 HOURS</a></li>
+                            </ul>
+                        </div>
+                    </div>
 
                     @foreach ($gameTypeData as $gameTypeName => $gameType)
                     <div class="game_type{{$gameTypeName}}">
