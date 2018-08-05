@@ -9,7 +9,7 @@
                     <h1>My Tickets</h1>
 
                     <div>
-                        {!! $grid->show('grid-table') !!}
+                        {!! $grid->render() !!}
                     </div>
                 </div>
 

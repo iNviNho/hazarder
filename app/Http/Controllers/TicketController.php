@@ -6,6 +6,16 @@ use Aginev\Datagrid\Datagrid;
 use App\Ticket;
 use App\UserTicket;
 use Illuminate\Support\Facades\Auth;
+use Nayjest\Grids\Components\ColumnHeadersRow;
+use Nayjest\Grids\Components\FiltersRow;
+use Nayjest\Grids\Components\OneCellRow;
+use Nayjest\Grids\Components\ShowingRecords;
+use Nayjest\Grids\Components\TFoot;
+use Nayjest\Grids\Components\THead;
+use Nayjest\Grids\EloquentDataProvider;
+use Nayjest\Grids\FieldConfig;
+use Nayjest\Grids\Grid;
+use Nayjest\Grids\GridConfig;
 
 class TicketController extends Controller
 {
@@ -21,76 +31,72 @@ class TicketController extends Controller
 
     private function getTicketsGrid() {
 
-        $tickets = Ticket::orderBy('id', "desc")->get();
+        $tickets = Ticket::query();
 
-        $request = app("request");
+        $columns = [
+            # simple results numbering, not related to table PK or any obtained data
+            (new FieldConfig())
+                ->setName('id')
+                ->setLabel('ID')
+                ->setSortable(true)
+                ->setSorting("desc"),
+            (new FieldConfig())
+                ->setName('match')
+                ->setLabel('Match')
+                ->setCallback(function ($val, $row) {
+                    return $row->getSrc()->match->name;
+                }),
+            (new FieldConfig())
+                ->setName('category')
+                ->setLabel('Category')
+                ->setCallback(function ($val, $row) {
+                    return $row->getSrc()->match->category;
+                }),
+            (new FieldConfig())
+                ->setName('status')
+                ->setLabel('Status')
+                ->setSortable(true),
+            (new FieldConfig())
+                ->setName('game_type')
+                ->setLabel('Game type')
+                ->setSortable(true),
+            (new FieldConfig())
+                ->setName('bet_option')
+                ->setLabel('Bet option')
+                ->setCallback(function ($val, $row) {
+                    return $row->getSrc()->matchbet->name;
+                }),
+            (new FieldConfig())
+                ->setName('rate')
+                ->setLabel('Rate')
+                ->setCallback(function ($val, $row) {
+                    return $row->getSrc()->matchbet->value;
+                }),
+        ];
 
-        $grid = new Datagrid($tickets, $request->get('f', []));
+        # Instantiate & Configure Grid
+        $datagrid = new Grid(
+            (new GridConfig())
+                ->setName('matches_datagrid')
+                ->setDataProvider(new EloquentDataProvider($tickets))
+                ->setCachingTime(0)
+                ->setColumns($columns)
+                ->setComponents([
+                    (new THead())
+                        ->setComponents([
+                            new ColumnHeadersRow(),
+                            new FiltersRow(),
+                        ])
+                    ,
+                    (new TFoot())
+                        ->addComponent(
+                            (new OneCellRow())
+                                ->addComponent(new ShowingRecords())
+                        )
+                ])
+        );
 
-        $grid->setColumn("id" , "ID");
-        $grid->setColumn("match_name", "Match", [
-            "wrapper" => function($value, $row) {
-                return $row->match->name;
-            }
-        ]);
-        $grid->setColumn("match_category", "Category", [
-            "wrapper" => function($value, $row) {
-                return $row->match->category;
-            }
-        ]);
-
-
-        $grid->setColumn('status', 'Status');
-        $grid->setColumn("game_type", "Game type");
-
-        $grid->setColumn("bet_option", "Bet option", [
-            "wrapper" => function($value, $row) {
-                return $row->matchbet->name;
-            }
-        ]);
-//        $grid->setColumn("bet_amount", "Bet amount");
-        $grid->setColumn("bet_rate", "Rate", [
-            "wrapper" => function($value, $row) {
-                return $row->matchbet->value;
-            }
-        ]);
-//        $grid->setColumn("bet_possible_win", "Bet possible win");
-//        $grid->setColumn("bet_possible_clear_win", "Bet possible clear win");
-//        $grid->setColumn("date_of_game", "Date of game", [
-//            "wrapper" => function($value, $row) {
-//                return $row->match->date_of_game;
-//            }
-//        ]);
-//        $grid->setColumn("result", "RESULT", [
-//            "wrapper" => function ($value, $row) {
-//                $value = $row->bet_win;
-//                if ($value == -1) {
-//                    return "<span class='glyphicon glyphicon-remove'></span>";
-//                }
-//                if ($value == "0") {
-//
-//                    // if was not bet, dont show anything
-//                    if ($row->status == "bet") {
-//                        return "<span class='glyphicon glyphicon-time'></span>";
-//                    } else {
-//                        return "-";
-//                    }
-//                }
-//                if ($value == "1") {
-//                    return "<span class='glyphicon glyphicon-ok'></span>";
-//                }
-//            }
-//        ]);
-
-//        $grid->setColumn("actions", "Actions", [
-//            "wrapper" => function ($value, $row) {
-//                return view("tickets.buttons", [
-//                    "ticket" => $row
-//                ]);
-//            }
-//        ]);
-
-        return $grid;
+        return $datagrid;
     }
 
 //    public function approve($ticketID) {
@@ -133,7 +139,7 @@ class TicketController extends Controller
 
         $grid = $this->getMyTicketsGrid();
 
-        return view("tickets.show", [
+        return view("tickets.myshow", [
             "grid" => $grid
         ]);
     }
@@ -141,69 +147,97 @@ class TicketController extends Controller
     private function getMyTicketsGrid() {
 
         $user = Auth::user();
-        $tickets = UserTicket::where("user_id", "=", $user->id)
-            ->orderBy('id', "desc")
-            ->get();
+        $tickets = UserTicket::where("user_id", "=", $user->id);
 
-        $request = app("request");
+        $columns = [
+            # simple results numbering, not related to table PK or any obtained data
+            (new FieldConfig())
+                ->setName('id')
+                ->setLabel('ID')
+                ->setSortable(true)
+                ->setSorting("desc"),
+            (new FieldConfig())
+                ->setName('match')
+                ->setLabel('Match')
+                ->setCallback(function ($val, $row) {
+                    return $row->getSrc()->ticket->match->name;
+                }),
+            (new FieldConfig())
+                ->setName('category')
+                ->setLabel('Category')
+                ->setCallback(function ($val, $row) {
+                    return $row->getSrc()->ticket->match->category;
+                }),
+            (new FieldConfig())
+                ->setName('game_type')
+                ->setLabel('Game type')
+                ->setCallback(function ($val, $row) {
+                    return $row->getSrc()->ticket->game_type;
+                }),
+            (new FieldConfig())
+                ->setName('status')
+                ->setLabel('Status')
+                ->setSortable(true),
 
-        $grid = new Datagrid($tickets, $request->get('f', []));
+            (new FieldConfig())->setName('bet_option')->setLabel('Bet option'),
+            (new FieldConfig())->setName('bet_amount')->setLabel('Bet amount'),
+            (new FieldConfig())->setName('bet_rate')->setLabel('Bet rate'),
+            (new FieldConfig())->setName('bet_possible_win')->setLabel('Bet possible win'),
+            (new FieldConfig())->setName('bet_possible_clear_win')->setLabel('Bet possible clear win'),
+            (new FieldConfig())->setName('bet_win')->setLabel('Bet win'),
 
-        $grid->setColumn("id" , "ID");
-
-        $grid->setColumn("match_name", "Match", [
-            "wrapper" => function($value, $row) {
-                return $row->ticket->match->name;
-            }
-        ]);
-        $grid->setColumn("match_category", "Category", [
-            "wrapper" => function($value, $row) {
-                return $row->ticket->match->category;
-            }
-        ]);
-
-
-        $grid->setColumn("game_type", "Game type", [
-            "wrapper" => function($value, $row) {
-                return $row->ticket->game_type;
-            }
-        ]);
-        $grid->setColumn('status', 'Status');
-
-
-        $grid->setColumn("bet_option", "Bet option");
-        $grid->setColumn("bet_amount", "Bet amount");
-        $grid->setColumn("bet_rate", "Rate");
-        $grid->setColumn("bet_possible_win", "Bet possible win");
-        $grid->setColumn("bet_possible_clear_win", "Bet possible clear win");
-        $grid->setColumn("bet_win", "Bet win");
-        $grid->setColumn("created_at", "Created", [
-            "wrapper" => function($value, $row) {
-                return $row->created_at;
-            }
-        ]);
-        $grid->setColumn("result", "RESULT", [
-            "wrapper" => function ($value, $row) {
-                $value = $row->bet_win;
-                if ($value == "-1") {
-                    return "<span style='color: red;' class='fa fa-2x fa-sad-tear'></span>";
-                }
-                if ($value == "0") {
-
-                    // if was not bet, dont show anything
-                    if ($row->status == "bet") {
-                        return "<span style='color: deepskyblue;' class='fa fa-2x fa-clock'></span>";
-                    } else {
-                        return "<span class='fa fa-2x fa-meh'></span>";
+            (new FieldConfig())
+                ->setName('created_at')
+                ->setLabel('Created at')
+                ->setCallback(function ($val, $row) {
+                    return $row->getSrc()->created_at;
+                }),
+            (new FieldConfig())
+                ->setName('result')
+                ->setLabel('Result')
+                ->setCallback(function ($val, $row) {
+                    $value = $row->getSrc()->bet_win;
+                    if ($value == "-1") {
+                        return "<span style='color: red;' class='fa fa-2x fa-sad-tear'></span>";
                     }
-                }
-                if ($value == "1") {
-                    return "<span style='color: green;' class='fa fa-2x fa-check-circle'></span>";
-                }
-            }
-        ]);
+                    if ($value == "0") {
 
-        return $grid;
+                        // if was not bet, dont show anything
+                        if ($row->getSrc()->status == "bet") {
+                            return "<span style='color: deepskyblue;' class='fa fa-2x fa-clock'></span>";
+                        } else {
+                            return "<span class='fa fa-2x fa-meh'></span>";
+                        }
+                    }
+                    if ($value == "1") {
+                        return "<span style='color: green;' class='fa fa-2x fa-check-circle'></span>";
+                    }
+                }),
+        ];
+
+        # Instantiate & Configure Grid
+        $datagrid = new Grid(
+            (new GridConfig())
+                ->setName('matches_datagrid')
+                ->setDataProvider(new EloquentDataProvider($tickets))
+                ->setCachingTime(0)
+                ->setColumns($columns)
+                ->setComponents([
+                    (new THead())
+                        ->setComponents([
+                            new ColumnHeadersRow(),
+                            new FiltersRow(),
+                        ])
+                    ,
+                    (new TFoot())
+                        ->addComponent(
+                            (new OneCellRow())
+                                ->addComponent(new ShowingRecords())
+                        )
+                ])
+        );
+
+        return $datagrid;
     }
 
 }
