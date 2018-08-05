@@ -135,6 +135,10 @@ class UserTicket extends Model
         $this->status = "betanddone";
 
         $this->save();
+
+        if ($this->ticket->game_type == "marcingale") {
+            MarcingaleUserTicket::treatBetAndDoneUserTicket($this);
+        }
     }
 
     private function loose() {
@@ -143,6 +147,10 @@ class UserTicket extends Model
         $this->status = "betanddone";
 
         $this->save();
+
+        if ($this->ticket->game_type == "marcingale") {
+            MarcingaleUserTicket::treatBetAndDoneUserTicket($this);
+        }
     }
 
 }

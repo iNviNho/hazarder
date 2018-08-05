@@ -72,7 +72,22 @@ class User extends Authenticatable
                 $userTicket->ticket_id = $ticket->id;
 
                 $userTicket->bet_option = $ticket->matchbet->name;
-                $userTicket->bet_amount = $userSettings->bet_amount;
+
+                // we use different code and flow for marcingale
+                if ($ticket->game_type == "marcingale") {
+
+                    if (MarcingaleUserTicket::shouldWeCreateNewMarcingaleTicketRound($this)) {
+                        $marcingaleUserTicket = MarcingaleUserTicket::createFreshMarcingaleUserTicketRound($this);
+                        $userTicket->bet_amount = $userSettings->bet_amount;
+                    } else {
+                        $marcingaleUserTicket = MarcingaleUserTicket::createContinuousMarcingaleUserTicketRound($this);
+                        $userTicket->bet_amount = MarcingaleUserTicket::getBetAmountForContinuousUserTicket($userSettings->bet_amount, $marcingaleUserTicket->level);
+                    }
+
+                } else {
+                    $userTicket->bet_amount = $userSettings->bet_amount;
+                }
+
                 $userTicket->bet_rate = $ticket->matchbet->value;
                 if ( ($userTicket->bet_rate == "") || ($userTicket->bet_rate == " ")) {
                     // hotfix for bad bet_rates
@@ -89,6 +104,12 @@ class User extends Authenticatable
                 $userTicket->bet_win = 0; // default we always obviously won 0 so far
 
                 $userTicket->save();
+
+                // dont forget to set user_ticket_id for marcingale user tickets
+                if ($ticket->game_type == "marcingale") {
+                    $marcingaleUserTicket->user_ticket_id = $userTicket->id;
+                    $marcingaleUserTicket->save();
+                }
 
                 // -1 allowed bet for this game type
                 $allowedGameTypesToBet[$ticket->game_type] -= 1;
