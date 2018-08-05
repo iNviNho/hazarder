@@ -35,6 +35,13 @@ class DashboardController extends Controller
             ->where("bet_win", "=", "-1")
             ->count();
 
+        // calculate ratio
+        if ($betTickets == 0) {
+            $ratio = "0.00";
+        } else {
+            $ratio = bcmul(bcdiv($wonTickets, $betTickets, 2), 100, 2);
+        }
+
         // calculate profit
         // get how much we bet
         $sumOfBetAmounts = UserTicket::where("user_id", "=", $user->id)
@@ -50,6 +57,7 @@ class DashboardController extends Controller
             "bet_tickets" => $betTickets,
             "won_tickets" => $wonTickets,
             "lost_tickets" => $lostTickets,
+            "ratio" => $ratio . " %",
             "profit" => $profit . " €"
         ];
         $gameTypeData["all"] = $data;
@@ -80,6 +88,14 @@ class DashboardController extends Controller
                 ->where("bet_win", "=", "-1")
                 ->count();
 
+            // calculate ratio
+            if ($betTickets == 0) {
+                $ratio = "0.00";
+            } else {
+                $ratio = bcmul(bcdiv($wonTickets, $betTickets, 2), 100, 2);
+            }
+
+
             // calculate profit
             // get how much we bet
             $sumOfBetAmounts = UserTicket::where("user_id", "=", $user->id)
@@ -101,6 +117,7 @@ class DashboardController extends Controller
                 "bet_tickets" => $betTickets,
                 "won_tickets" => $wonTickets,
                 "lost_tickets" => $lostTickets,
+                "ratio" => $ratio . " %",
                 "profit" => $profit . " €"
             ];
 
