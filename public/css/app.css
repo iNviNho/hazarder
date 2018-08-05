@@ -14,6 +14,10 @@
     background-position: center center
 }
 
+.clear {
+    clear: both;
+}
+
 .navbar-laravel a {
     color: #FFF!important;
 }
@@ -34,4 +38,21 @@
 .matchbettable td {
     padding: 5px;
     text-align: center;
+}
+
+.game_typeall {
+    background-color: rgba(0,0,0,.1);
+}
+
+.game_type_title {
+    background-color: lightblue;
+    padding: 10px;
+}
+
+.game_type_title > span {
+    float: right;
+    background-color: lightskyblue;
+    padding: 10px;
+    font-weight: bold;
+    margin: -10px -10px -10px -10px;
 }
