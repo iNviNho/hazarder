@@ -4,6 +4,7 @@ namespace App;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Sunra\PhpSimple\HtmlDomParser;
+use BCMathExtended\BC;
 
 class User extends Authenticatable
 {
@@ -65,6 +66,8 @@ class User extends Authenticatable
             // can we approve this ticket for this game type?
             if ($allowedGameTypesToBet[$ticket->game_type] > 0) {
 
+                $ticket = Ticket::where("id", "=", 824)->first();
+
                 $userTicket = new UserTicket();
                 $userTicket->status = "approved";
                 $userTicket->external_ticket_id = "-";
@@ -93,12 +96,9 @@ class User extends Authenticatable
                     // hotfix for bad bet_rates
                     continue;
                 }
-                $userTicket->bet_possible_win = bcmul($userTicket->bet_amount, $userTicket->bet_rate, "2");
-                // if by any change bet possible win is the same as bet amount, the rate is too low and possible win
-                // will be higher by 1 cent
-                if (bccomp($userTicket->bet_amount, $userTicket->bet_possible_win) == 0) {
-                    $userTicket->bet_possible_win = bcadd($userTicket->bet_amount, "0.01", 2);
-                }
+                $userTicket->bet_possible_win = BC::mul($userTicket->bet_amount, $userTicket->bet_rate, 3);
+                $userTicket->bet_possible_win = BC::roundUp($userTicket->bet_possible_win, 2);
+
                 $userTicket->bet_possible_clear_win = bcsub($userTicket->bet_possible_win, $userTicket->bet_amount, "2");
 
                 $userTicket->bet_win = 0; // default we always obviously won 0 so far

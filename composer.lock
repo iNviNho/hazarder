@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d9cf46476b927581b963755aba82d6ec",
+    "content-hash": "4a428b856a5b2bfe3f6c1555c372ead2",
     "packages": [
         {
             "name": "dnoegel/php-xdg-base-dir",
@@ -860,6 +860,62 @@
                 }
             ],
             "time": "2015-04-20T18:58:01+00:00"
+        },
+        {
+            "name": "krowinski/bcmath-extended",
+            "version": "4.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/krowinski/bcmath-extended.git",
+                "reference": "bf0d1d3c2bd79081f7b6fd765159f747ddc7c58c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/krowinski/bcmath-extended/zipball/bf0d1d3c2bd79081f7b6fd765159f747ddc7c58c",
+                "reference": "bf0d1d3c2bd79081f7b6fd765159f747ddc7c58c",
+                "shasum": ""
+            },
+            "require": {
+                "ext-bcmath": "*",
+                "php": ">=5.3"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^4.8|^5.7"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "BCMathExtended\\": "src/BCMathExtended/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kacper Rowiński",
+                    "email": "kacper.rowinski@gmail.com"
+                }
+            ],
+            "description": "Extends php BCMath lib for missing functions like floor, ceil, round, abs, min, max, rand for big numbers. Also wraps existing BCMath functions. (more http://php.net/manual/en/book.bc.php) Supports scientific notation.s",
+            "keywords": [
+                "Arbitrary-precision",
+                "abs",
+                "bc",
+                "bcmath",
+                "bignumber",
+                "ceil",
+                "complex-numbers",
+                "floor",
+                "math",
+                "php",
+                "precision",
+                "rand",
+                "round",
+                "scientific-notation"
+            ],
+            "time": "2018-08-03T21:19:15+00:00"
         },
         {
             "name": "laravel/framework",
