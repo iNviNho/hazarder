@@ -66,8 +66,6 @@ class User extends Authenticatable
             // can we approve this ticket for this game type?
             if ($allowedGameTypesToBet[$ticket->game_type] > 0) {
 
-                $ticket = Ticket::where("id", "=", 824)->first();
-
                 $userTicket = new UserTicket();
                 $userTicket->status = "approved";
                 $userTicket->external_ticket_id = "-";
