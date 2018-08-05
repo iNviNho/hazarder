@@ -35,6 +35,9 @@
                                         <td>Lost tickets</td><td><strong>{{$gameType["lost_tickets"]}}</strong></td>
                                     </tr>
                                     <tr>
+                                        <td>Win ratio</td><td><strong>{{$gameType["ratio"]}}</strong></td>
+                                    </tr>
+                                    <tr>
                                         <td>Profit</td><td><strong>{{$gameType["profit"]}}</strong></td>
                                     </tr>
 
