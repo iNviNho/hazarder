@@ -24,6 +24,8 @@ Route::group(["middleware" => ["auth", "authorized"]], function() {
 
     Route::get('/home', 'HomeController@index')->name('home');
 
+    Route::get('/dashboard', 'DashboardController@index')->name('dashboard');
+
     Route::get('/my-tickets', "TicketController@showMyTickets");
     Route::get('/tickets', "TicketController@showTickets");
 

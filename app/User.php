@@ -79,6 +79,11 @@ class User extends Authenticatable
                     continue;
                 }
                 $userTicket->bet_possible_win = bcmul($userTicket->bet_amount, $userTicket->bet_rate, "2");
+                // if by any change bet possible win is the same as bet amount, the rate is too low and possible win
+                // will be higher by 1 cent
+                if (bccomp($userTicket->bet_amount, $userTicket->bet_possible_win) == 0) {
+                    $userTicket->bet_possible_win = bcadd($userTicket->bet_amount, "0.01", 2);
+                }
                 $userTicket->bet_possible_clear_win = bcsub($userTicket->bet_possible_win, $userTicket->bet_amount, "2");
 
                 $userTicket->bet_win = 0; // default we always obviously won 0 so far
