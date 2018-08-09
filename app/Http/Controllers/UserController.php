@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 class UserController extends Controller
 {
 
-    public function showSettings(Request $request) {
+    public function showSettings() {
 
         $settings = Auth::user()->getSettings()->first();
         return view("user.settings", [
@@ -20,7 +20,14 @@ class UserController extends Controller
 
         $settings = Auth::user()->getSettings()->first();
 
-        $settings->update($request->all());
+        $values = $request->all();
+
+        // lets validate bet_amount
+        if (bccomp($values["bet_amount"], "0.5", 2) < 0) {
+            $values["bet_amount"] = "0.5";
+        }
+
+        $settings->update($values);
 
         $request->session()->flash('msg', 'Settings successfully update!');
         return view("user.settings", [

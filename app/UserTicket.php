@@ -2,6 +2,7 @@
 
 namespace App;
 
+use BCMathExtended\BC;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Sunra\PhpSimple\HtmlDomParser;
@@ -127,6 +128,60 @@ class UserTicket extends Model
             // not result yet
         }
 
+
+        // lets also try to finalize
+        $finalBet = $ticketHTML->find("tr[class=bet-type row-2]", 0)->find("td[class=value]", 0)->plaintext;
+
+        if (!is_null($finalBet)) {
+
+            $this->bet_rate = $finalBet;
+
+            $this->bet_possible_win = BC::mul($this->bet_amount, $this->bet_rate, 3);
+            $this->bet_possible_win = BC::roundUp($this->bet_possible_win, 2);
+
+            $this->bet_possible_clear_win = bcsub($this->bet_possible_win, $this->bet_amount, "2");
+
+            $this->is_finalized = 1;
+
+            $this->save();
+
+            $command->info("UserTicket with ID: ". $this->id . " was successfully finalized");
+        }
+
+
+    }
+
+    public function finalize($command) {
+
+        $user = new \App\Services\User\User($this->user);
+        if (!$user->login()) {
+            $command->info("User with ID: " . $this->user->id . " was not successfully logged in :( RIP");
+            return;
+        }
+
+        $url = env("BASE_TICKET_SHOW") . $this->external_ticket_id . "&kind=MAIN";
+
+        $ticketRequest = $user->getUserGuzzle()->get($url);
+
+        $ticketHTML = HtmlDomParser::str_get_html($ticketRequest->getBody()->getContents());
+
+        $finalBet = $ticketHTML->find("tr[class=bet-type row-2]", 0)->find("td[class=value]", 0)->plaintext;
+
+        if (!is_null($finalBet)) {
+
+            $this->bet_rate = $finalBet;
+
+            $this->bet_possible_win = BC::mul($this->bet_amount, $this->bet_rate, 3);
+            $this->bet_possible_win = BC::roundUp($this->bet_possible_win, 2);
+
+            $this->bet_possible_clear_win = bcsub($this->bet_possible_win, $this->bet_amount, "2");
+
+            $this->is_finalized = 1;
+
+            $this->save();
+
+            $command->info("UserTicket with ID: ". $this->id . " was successfully finalized");
+        }
     }
 
     private function win() {

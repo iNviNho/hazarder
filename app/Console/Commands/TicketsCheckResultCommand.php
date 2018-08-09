@@ -34,6 +34,8 @@ class TicketsCheckResultCommand extends Command
                 $userTicket->tryToCheckResult($this);
                 $this->info("Checking result of UserTicket with ID: " . $userTicket->id . " successfully ran.");
 
+                $rand = rand(5, 15);
+                sleep($rand);
             }
 
             $user->updateCredit($this);
