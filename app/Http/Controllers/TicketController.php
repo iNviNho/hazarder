@@ -180,7 +180,7 @@ class TicketController extends Controller
                 ->setLabel('Status')
                 ->setSortable(true),
 
-//            (new FieldConfig())->setName('bet_option')->setLabel('Bet option'),
+            (new FieldConfig())->setName('bet_option')->setLabel('Bet option'),
             (new FieldConfig())->setName('bet_amount')->setLabel('Bet amount'),
             (new FieldConfig())->setName('bet_rate')->setLabel('Bet rate'),
             (new FieldConfig())->setName('bet_possible_win')->setLabel('Bet possible win'),
