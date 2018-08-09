@@ -28,4 +28,14 @@ class UserController extends Controller
         ]);
     }
 
+    public function updateCredit(Request $request) {
+
+        $user = Auth::user();
+        $user->updateCredit();
+
+        $request->session()->flash('msg', 'Your credit was updated!');
+
+        return redirect("/home");
+    }
+
 }

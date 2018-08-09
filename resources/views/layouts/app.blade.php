@@ -62,8 +62,19 @@
                             </li>
                         @else
                             <div style="padding-top: 2px; padding-right: 10px; color: white; font-weight: bold; font-size: 24px;">
-                                {{Auth::user()->credit}} €
+                                {{Auth::user()->credit}}€
                             </div>
+                            <a href="/user/update-credit" >
+                                <div style="padding-top: 8px;
+                                    padding-right: 10px;
+                                    padding-left: 10px;
+                                    color: #56ddff;
+                                    font-weight: bold;
+                                    font-size: 16px;" data-toggle="tooltip" data-placement="bottom"
+                                    title="Last updated: {{Auth::user()->getCreditUpdateTime()->format("d.m.Y H:i")}}">
+                                    <span class="fa fa-sync" ></span>
+                                </div>
+                            </a>
                             <li class="nav-item dropdown">
                                 <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
                                     {{ Auth::user()->name }} <span class="caret"></span>

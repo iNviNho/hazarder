@@ -1,6 +1,7 @@
 <?php
 namespace App;
 
+use Carbon\Carbon;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Sunra\PhpSimple\HtmlDomParser;
@@ -119,12 +120,14 @@ class User extends Authenticatable
 
     }
 
-    public function updateCredit($command) {
+    public function updateCredit($command = false) {
 
         // first insert into basket
         $user = new \App\Services\User\User($this);
         if (!$user->login()) {
-            $command->info("User with ID: " . $this->id . " was not successfully logged in :( RIP");
+            if ($command) {
+                $command->info("User with ID: " . $this->id . " was not successfully logged in :( RIP");
+            }
             return;
         }
         $guzzleClient = $user->getUserGuzzle();
@@ -137,10 +140,16 @@ class User extends Authenticatable
         $credit = $ticketSummaryHtml->find("strong[class=credit]", 0)->plaintext;
 
         $this->credit = $credit;
+        $this->credit_update_time = Carbon::now();
 
         $this->save();
+        if ($command) {
+            $command->info("Users credit for ID: " . $this->id . " was successfully updated to " . $credit);
+        }
+    }
 
-        $command->info("Users credit for ID: " . $this->id . " was successfully updated to " . $credit);
+    public function getCreditUpdateTime() {
+        return Carbon::createFromTimeString($this->credit_update_time);
     }
 
 }
