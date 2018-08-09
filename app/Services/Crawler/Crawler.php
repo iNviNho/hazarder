@@ -116,8 +116,8 @@ class Crawler
 
                     // do we have this unique_id already in DB?
                     if (MatchService::alreadyExists($match->unique_id)) {
-                        // dont parse
-                        $this->crawlCommand->info("Parsed but SKIPPED game because it already exists " . $match->unique_id);
+                        // dont parse again, please just update rates of matchbets
+                        $this->updateMatch($match, $game);
                         continue;
                     }
 
@@ -221,6 +221,43 @@ class Crawler
         }
 
         $this->crawlCommand->info("Parse all games DONE");
+    }
+
+    private function updateMatch($match, $game) {
+
+        $bets = $game->find(".market", 0)->children();
+
+        // we skip weird game type and single, it will be skipped anyway
+        if (count($bets) == 1 || count($bets) == 4) {
+            return;
+        }
+
+        $ourMatch = Match::where("unique_id", "=", $match->unique_id)->first();
+
+        // check if count of our matchbets is the same as currently online
+        // if it is, go throught all and update base on name
+        if (count($bets) == $ourMatch->getMatchBets()->count()) {
+            foreach ($bets as $key => $bet) {
+
+                // lets get OUR matchbet
+                $matchBet = MatchBet::where("dataodd", "=", $bet->getAttribute("data-odd"))->first();
+
+                $matchBet->name = $bet->find("span[class=tip]", 0)->plaintext;
+                $matchBet->value = trim($bet->find("span[class=odd]", 0)->plaintext);
+
+                $matchBet->dataodd = $bet->getAttribute("data-odd");
+
+                $matchBet->save();
+            }
+
+            // done, log
+            $this->crawlCommand->info("Updated matchbets for already existing match " . $match->unique_id);
+
+        } else {
+            $this->crawlCommand->info("NOT Updated match because our match has " . $ourMatch->getMatchBets()->count() . " bets 
+                and crawler gave us " . count($bets) . " for already existing match " . $match->unique_id);
+        }
+
     }
 
     /**
