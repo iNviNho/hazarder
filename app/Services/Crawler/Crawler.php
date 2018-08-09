@@ -247,6 +247,8 @@ class Crawler
 
                 $matchBet->dataodd = $bet->getAttribute("data-odd");
 
+                $matchBet->updated_at = Carbon::now();
+
                 $matchBet->save();
             }
 
