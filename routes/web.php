@@ -34,6 +34,7 @@ Route::group(["middleware" => ["auth", "authorized"]], function() {
     Route::get('/tickets/bet/{ticketID}', "TicketController@bet");
     Route::get('/tickets/checkresult/{ticketID}', "TicketController@checkresult");
 
+    Route::get("/match/{matchID}", "MatchesController@showMatch");
     Route::get("/matches", "MatchesController@showMatches");
 
     Route::get('/user/update-credit', 'UserController@updateCredit');

@@ -28,6 +28,17 @@ class MatchesController extends Controller
         ]);
     }
 
+    public function showMatch($matchID) {
+
+        $match = Match::where("id", "=", $matchID)->first();
+
+//        dd($match);
+
+        return view("match.show",[
+            "match" => $match
+        ]);
+    }
+
     private function getMatchesGrid() {
 
         $matches = Match::query();

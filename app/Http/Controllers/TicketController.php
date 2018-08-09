@@ -161,7 +161,8 @@ class TicketController extends Controller
                 ->setName('match')
                 ->setLabel('Match')
                 ->setCallback(function ($val, $row) {
-                    return $row->getSrc()->ticket->match->name;
+                    $alink = "<a href='/match/" . $row->getSrc()->ticket->match->id . "' >" . $row->getSrc()->ticket->match->name . "</a";
+                    return $alink;
                 }),
             (new FieldConfig())
                 ->setName('category')
