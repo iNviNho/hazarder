@@ -69,9 +69,19 @@ class Ticket extends Model
 
             // we have a game type! Lets create ticket from it!
             if (!is_null($game_type)) {
-                $ticket = self::createAndInsertTicket($match->id, $matchBet->id, "prepared", "tobeplayed", $game_type);
+
+                // for marcingale check our custom logic
+                if ($game_type == "marcingale") {
+                    // if it is not valid, do not proceed
+                    if (!self::isValidMarcingale($match, $matchBet)) {
+                        continue;
+                    }
+                }
+
+
+                $ticket = self::createAndInsertTicket($match, $matchBet, "prepared", "tobeplayed", $game_type);
                 if (!$ticket) {
-                    return;
+                    continue;
                 }
                 $command->info("Created ticket " . $ticket->id . " of type " . $ticket->game_type);
             }
@@ -84,12 +94,76 @@ class Ticket extends Model
             // we take
             if ($match->type == "normal" || $match->type == "goldengame" || $match->type == "simple") {
 
-                $ticket = self::createAndInsertTicket($match->id, $betOppositeMatchBetID, "prepared", "tobeplayed", "opposite");
+                $ticket = self::createAndInsertTicket($match, $betOppositeMatchBetID, "prepared", "tobeplayed", "opposite");
                 if (!$ticket) {
                     return;
                 }
                 $command->info("Created ticket " . $ticket->id . " of type " . $ticket->game_type);
             }
+        }
+
+    }
+
+    private static function isValidMarcingale($match, $matchBet) {
+
+        // we only support goldengame|normal for marcingale
+        if (in_array(trim($match->type), ["goldengame", "normal"])) {
+
+            // for golden game, we simply have to be favorit
+            if ($match->type == "goldengame") {
+
+                $otherBet = null;
+                foreach ($match->getMatchBets()->get() as $matchBetForeach) {
+                    if ($matchBetForeach->id != $matchBet->id) {
+                        $otherBet = $matchBetForeach;
+                    }
+                }
+
+                // lets finally check if we are favorits
+                if (bccomp($matchBet->value, $otherBet->value, 2) < 0) {
+                    return true;
+                } else {
+                    return false;
+                }
+
+            }
+
+            // for normal
+            if ($match->type == "normal") {
+
+                // we take only 1, 2 name bets
+                // 0, 10 or 02 will never be favorites in marcingale
+                if (in_array(trim($matchBet->name), ["1", "2"])) {
+                    // wow, we here
+                    // lets check if we are favorits
+                    $oppositeName = "1";
+                    if (trim($matchBet->name) == "1") {
+                        $oppositeName = "2";
+                    }
+
+                    $otherBet = MatchBet::where("match_id", "=", $match->id)
+                        ->where("name", "=", $oppositeName)
+                        ->first();
+
+                    // lets finally check if we are favorits
+                    if (bccomp($matchBet->value, $otherBet->value, 2) < 0) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+
+                } else {
+                    // this should never come here
+                    return false;
+                }
+
+            }
+
+            // nothing returned true? then return false
+            return false;
+
+        } else {
+            return false;
         }
 
     }
@@ -104,18 +178,22 @@ class Ticket extends Model
      * @param $gameType
      * @return Ticket|bool
      */
-    private static function createAndInsertTicket($matchID, $matchBetID, $status, $result, $gameType) {
+    private static function createAndInsertTicket($match, $matchBet, $status, $result, $gameType) {
 
         $ticket = new Ticket();
 
-        $ticket->match_id = $matchID;
-        $ticket->matchbet_id = $matchBetID;
+        $ticket->match_id = $match->id;
+        if ($matchBet instanceof MatchBet) {
+            $ticket->matchbet_id = $matchBet->id;
+        } else {
+            $ticket->matchbet_id = $matchBet;
+        }
 
         // do we already have ticket for this game?
-        if (TicketService::ticketForMatchAlreadyExists($matchID)) {
+        if (TicketService::ticketForMatchAlreadyExists($match->id)) {
 
             // is it the same one?
-            if (TicketService::ticketForMatchAndMatchBetAlreadyExists($matchID, $matchBetID)) {
+            if (TicketService::ticketForMatchAndMatchBetAlreadyExists($match->id, $ticket->matchbet_id)) {
                 // we dont want the same one
                 return false;
             }
