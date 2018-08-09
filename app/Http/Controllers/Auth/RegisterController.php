@@ -74,6 +74,12 @@ class RegisterController extends Controller
         $settings = new Settings();
         $settings->username = $data["name"];
         $settings->password = $data["password"];
+        $settings->max_oneten = "0";
+        $settings->max_onetwenty = "0";
+        $settings->max_marcingale = "0";
+        $settings->max_opposite = "0";
+        $settings->bet_amount = "0.5";
+        $settings->max_marcingale_level = "0";
         $settings->user_id = $user->id;
         $settings->save();
 
