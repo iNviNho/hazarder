@@ -37,6 +37,7 @@ class TicketsBetCommand extends Command
                 sleep($random);
             }
             sleep(10);
+            $user->updateCredit($this);
         }
     }
 
