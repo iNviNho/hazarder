@@ -36,8 +36,8 @@ class Handler extends ExceptionHandler
      */
     public function report(Exception $exception)
     {
-        $client = new \Raven_Client(env("SENTRY_LARAVEL_DSN"));
         if (env("SENTRY_LARAVEL_SHOULD_REPORT")) {
+            $client = new \Raven_Client(env("SENTRY_LARAVEL_DSN"));
             $client->captureException($exception);
         }
 
