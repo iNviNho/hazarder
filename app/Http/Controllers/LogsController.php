@@ -33,7 +33,8 @@ class LogsController extends Controller
 
     private function getMyLogsGrid() {
 
-        $tickets = UserLog::query();
+        $tickets = UserLog::query()
+            ->where("user_id", "=", Auth::user()->id);
 
         $columns = [
             # simple results numbering, not related to table PK or any obtained data
