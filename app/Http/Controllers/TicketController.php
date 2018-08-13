@@ -100,42 +100,6 @@ class TicketController extends Controller
         return $datagrid;
     }
 
-//    public function approve($ticketID) {
-//
-//        $ticket = Ticket::find($ticketID);
-//        $ticket->status = "approved";
-//
-//        $ticket->save();
-//
-//        return redirect()->action('TicketController@showTickets');
-//    }
-//
-//    public function disapprove($ticketID) {
-//
-//        $ticket = Ticket::find($ticketID);
-//        $ticket->status = "disapproved";
-//
-//        $ticket->save();
-//
-//        return redirect()->action('TicketController@showTickets');
-//    }
-//
-//    public function bet($ticketID) {
-//
-//        $ticket = Ticket::find($ticketID);
-//        $ticket->bet();
-//
-//        return redirect()->action('TicketController@showTickets');
-//    }
-//
-//    public function checkresult($ticketID) {
-//
-//        $ticket = Ticket::find($ticketID);
-//        Ticket::tryToCheckResult($ticket);
-//
-//        return redirect()->action('TicketController@showTickets');
-//    }
-
     public function showMyTickets() {
 
         $grid = $this->getMyTicketsGrid();

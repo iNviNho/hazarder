@@ -124,7 +124,7 @@ class UserTicket extends Model
     }
 
 
-    public function tryToCheckResult($command) {
+    public function tryToCheckResult() {
 
         $user = new \App\Services\User\User($this->user);
         if (!$user->login()) {
@@ -155,7 +155,7 @@ class UserTicket extends Model
         // lets also try to finalize
         $finalBet = $ticketHTML->find("tr[class=bet-type row-2]", 0)->find("td[class=value]", 0)->plaintext;
 
-        if (!is_null($finalBet)) {
+        if (!is_null($finalBet) && $this->is_finalized == 0) {
 
             $this->bet_rate = $finalBet;
 
