@@ -8,3 +8,5 @@
 public/cookie_jar.txt
 cookie_jar.txt
 *.txt
+/bootstrap/cache/*
+bootstrap/cache/*
