@@ -7,7 +7,6 @@
 }
 
 .lenka-bg {
-    background-image: url("/images/background.jpg");
     min-height: 100vh;
     width: 100%;
     background-size: cover;

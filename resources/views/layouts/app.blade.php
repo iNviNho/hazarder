@@ -28,7 +28,17 @@
     <link rel="icon" type="image/png" href="{{ assetn("images/h.png") }}">
 
 </head>
-<body class="lenka-bg">
+<body class="lenka-bg"
+@guest
+    style="background-image: url({{ assetn("images/background.jpg") }});"
+@else
+    @if (is_null(Auth::user()->getSettings()->first()->bg_image))
+      style="background-image: url({{ assetn("images/background.jpg") }});"
+    @else
+        style="background-image: url({{ assetn(Auth::user()->getSettings()->first()->bg_image) }});"
+    @endif
+@endguest
+>
     <div id="app">
         @if(session()->has('msg'))
             <div class="alert alert-info">

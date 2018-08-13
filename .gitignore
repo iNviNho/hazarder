@@ -10,3 +10,4 @@ cookie_jar.txt
 *.txt
 /bootstrap/cache/*
 bootstrap/cache/*
+/public/images/user-images/*

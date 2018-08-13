@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
@@ -19,12 +21,23 @@ class UserController extends Controller
     public function updateSettings(Request $request) {
 
         $settings = Auth::user()->getSettings()->first();
+        $user = Auth::user();
 
         $values = $request->all();
 
         // lets validate bet_amount
         if (bccomp($values["bet_amount"], "0.5", 2) < 0) {
             $values["bet_amount"] = "0.5";
+        }
+
+        // lets check if photo was uploaded
+        $file = $request->file('bg_image');
+        if ($request->hasFile("bg_image") && $file->isValid()) {
+            // lets set it
+            $values["bg_image"] = "images/user-images/" . $user->id . ".". $file->getClientOriginalExtension();
+            $file->move("images/user-images", $user->id . ".". $file->getClientOriginalExtension());
+        } else {
+            $values["bg_image"] = $settings->bg_image;
         }
 
         $settings->update($values);

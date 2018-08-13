@@ -8,7 +8,7 @@
                 <div class="basic-content">
                     <h1>Settings</h1>
 
-                    <form method="POST" action="/settings">
+                    <form method="POST" action="/settings" enctype="multipart/form-data">
                         @csrf
                         <div class="form-group row">
                             <label for="email" class="col-sm-4 col-form-label text-md-right">Username</label>
@@ -54,6 +54,12 @@
                             <label for="email" class="col-sm-4 col-form-label text-md-right">Max bet amount</label>
                             <div class="col-md-6">
                                 <input type="text" class="form-control" name="bet_amount" value="{{$settings->bet_amount}}" required autofocus>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="email" class="col-sm-4 col-form-label text-md-right">Max bet amount</label>
+                            <div class="col-md-6">
+                                <input type="file" class="form-control" name="bg_image">
                             </div>
                         </div>
                         <div class="form-group row">
