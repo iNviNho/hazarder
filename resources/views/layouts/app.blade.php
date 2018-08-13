@@ -40,16 +40,11 @@
                 <a class="navbar-brand" href="{{ url('/') }}">
                     <strong>Hazarder</strong>
                 </a>
-                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
-                    <span class="navbar-toggler-icon"></span>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent">
+                    <span class="fa fa-angle-down"  style="color: #FFF; font-size: 28px;"></span>
                 </button>
 
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <!-- Left Side Of Navbar -->
-                    <ul class="navbar-nav mr-auto">
-
-                    </ul>
-
+                <div class="collapse navbar-collapse" id="navbarSupportedContent" style="text-align: right;">
                     <!-- Right Side Of Navbar -->
                     <ul class="navbar-nav ml-auto">
                         <!-- Authentication Links -->
@@ -61,20 +56,15 @@
                                 <a class="nav-link" href="{{ route('register') }}">{{ __('Register') }}</a>
                             </li>
                         @else
-                            <div style="padding-top: 2px; padding-right: 10px; color: white; font-weight: bold; font-size: 24px;">
+                            <div style="color: white; font-weight: bold; font-size: 22px;">
                                 {{Auth::user()->credit}}€
+                                <a href="/user/update-credit" data-placement="bottom" data-toggle="tooltip"
+                                   title="Last updated: {{Auth::user()->getCreditUpdateTime()->format("d.m.Y H:i")}}"
+                                    style="padding-left: 10px;">
+                                    <span class="fa fa-sync" style="color: #56ddff; font-size: 18px;"></span>
+                                </a>
                             </div>
-                            <a href="/user/update-credit" >
-                                <div style="padding-top: 8px;
-                                    padding-right: 10px;
-                                    padding-left: 10px;
-                                    color: #56ddff;
-                                    font-weight: bold;
-                                    font-size: 16px;" data-toggle="tooltip" data-placement="bottom"
-                                    title="Last updated: {{Auth::user()->getCreditUpdateTime()->format("d.m.Y H:i")}}">
-                                    <span class="fa fa-sync" ></span>
-                                </div>
-                            </a>
+
                             <li class="nav-item dropdown">
                                 <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
                                     {{ Auth::user()->name }} <span class="caret"></span>
