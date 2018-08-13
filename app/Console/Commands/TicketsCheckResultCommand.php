@@ -8,6 +8,7 @@
 
 namespace App\Console\Commands;
 
+use App\Events\UserLogEvent;
 use App\User;
 use App\UserTicket;
 use Illuminate\Console\Command;
@@ -32,13 +33,11 @@ class TicketsCheckResultCommand extends Command
                 ->where("user_id", "=", $user->id);
             foreach ($userTickets as $userTicket) {
                 $userTicket->tryToCheckResult($this);
-                $this->info("Checking result of UserTicket with ID: " . $userTicket->id . " successfully ran.");
 
-                $rand = rand(5, 15);
-                sleep($rand);
+                sleep(rand(5, 15));
             }
 
-            $user->updateCredit($this);
+            $user->updateCredit();
         }
 
         $this->info("Check for check results was done.");

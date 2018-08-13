@@ -2,8 +2,8 @@
 
 namespace App;
 
+use App\Events\UserLogEvent;
 use BCMathExtended\BC;
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Sunra\PhpSimple\HtmlDomParser;
 
@@ -28,7 +28,7 @@ class UserTicket extends Model
     /**
      * Lets bet this ticket
      */
-    public function bet($command) {
+    public function bet() {
 
         if (env("APP_ENV") == "local") {
             $this->lamebet();
@@ -38,9 +38,28 @@ class UserTicket extends Model
         // first insert into basket
         $user = new \App\Services\User\User($this->user);
         if (!$user->login()) {
-            $command->info("User with ID: " . $this->user->id . " was not successfully logged in :( RIP");
+            event(new UserLogEvent("Failed login while betting UserTicket with ID: " . $this->id, $this->user->id, $this->id));
             return;
         }
+
+        // lets surround all bet logic in try catch
+        try {
+            $this->realbet($user);
+        } catch(\Throwable $e) {
+
+            event(new UserLogEvent("Failed bet for the first time while betting UserTicket with ID: " . $this->id . " Exception: " . $e->getMessage(), $this->user->id, $this->id));
+
+            // lets try only one more time
+            try {
+                $this->realbet($user);
+            } catch(\Throwable $e) {
+                event(new UserLogEvent("Failed bet for the second time while betting UserTicket with ID: " . $this->id . " Exception: " . $e->getMessage(), $this->user->id, $this->id));
+                return;
+            }
+        }
+    }
+
+    private function realbet($user) {
 
         $now = Carbon::now()->getTimestamp();
         $guzzleClient = $user->getUserGuzzle();
@@ -92,6 +111,8 @@ class UserTicket extends Model
         $this->external_ticket_id = $results[1];
 
         $this->save();
+
+        event(new UserLogEvent("Successful bet of UserTicket with ID: " . $this->id . " for game type: " . $this->ticket->game_type, $this->user->id, $this->id));
     }
 
     private function lamebet() {
@@ -107,7 +128,7 @@ class UserTicket extends Model
 
         $user = new \App\Services\User\User($this->user);
         if (!$user->login()) {
-            $command->info("User with ID: " . $this->user->id . " was not successfully logged in :( RIP");
+            event(new UserLogEvent("Failed login while betting UserTicket with ID: " . $this->id, $this->user->id, $this->id));
             return;
         }
 
@@ -122,8 +143,10 @@ class UserTicket extends Model
 
         if (strpos($resultClass, "NON_WINNING") !== false) {
             $this->loose();
+            event(new UserLogEvent("UserTicket with ID: " . $this->id . " was marked as LOST.", $this->user->id, $this->id));
         } elseif (strpos($resultClass, "WINNING") !== false) {
             $this->win();
+            event(new UserLogEvent("UserTicket with ID: " . $this->id . " was marked as WON.", $this->user->id, $this->id));
         } else {
             // not result yet
         }
@@ -145,17 +168,16 @@ class UserTicket extends Model
 
             $this->save();
 
-            $command->info("UserTicket with ID: ". $this->id . " was successfully finalized");
+            event(new UserLogEvent("UserTicket with ID: " . $this->id . " was successfully finalized.", $this->user->id, $this->id));
         }
-
 
     }
 
-    public function finalize($command) {
+    public function finalize() {
 
         $user = new \App\Services\User\User($this->user);
         if (!$user->login()) {
-            $command->info("User with ID: " . $this->user->id . " was not successfully logged in :( RIP");
+            event(new UserLogEvent("Failed login while betting UserTicket with ID: " . $this->id, $this->user->id, $this->id));
             return;
         }
 
@@ -180,7 +202,7 @@ class UserTicket extends Model
 
             $this->save();
 
-            $command->info("UserTicket with ID: ". $this->id . " was successfully finalized");
+            event(new UserLogEvent("UserTicket with ID: " . $this->id . " was successfully finalized.", $this->user->id, $this->id));
         }
     }
 

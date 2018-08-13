@@ -21,7 +21,7 @@ class TicketsPrepareCommand extends Command
 
     public function handle() {
 
-        $this->info("Prepare tickets from todays matches");
+        $this->info("Prepare tickets from all matches that has not been played yet");
 
         $matches = Match::all()
             ->where('date_of_game', '>=', Carbon::now()->format("Y-m-d H:i:s"));

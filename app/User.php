@@ -1,6 +1,7 @@
 <?php
 namespace App;
 
+use App\Events\UserLogEvent;
 use Carbon\Carbon;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -36,7 +37,7 @@ class User extends Authenticatable
         'password', 'remember_token',
     ];
 
-    public function approveTickets($command, $tickets) {
+    public function approveTickets($tickets) {
 
         $userSettings = $this->getSettings()->first();
 
@@ -113,21 +114,19 @@ class User extends Authenticatable
                 // -1 allowed bet for this game type
                 $allowedGameTypesToBet[$ticket->game_type] -= 1;
 
-                $command->info("UserTicket with ID: " . $userTicket->id . " was successfully create for user with ID: " . $this->id);
+                event(new UserLogEvent("UserTicket for game type: " . $ticket->game_type . " with ID: " . $userTicket->id . " created.", $this->id, $userTicket->id));
             }
 
         }
 
     }
 
-    public function updateCredit($command = false) {
+    public function updateCredit() {
 
         // first insert into basket
         $user = new \App\Services\User\User($this);
         if (!$user->login()) {
-            if ($command) {
-                $command->info("User with ID: " . $this->id . " was not successfully logged in :( RIP");
-            }
+            event(new UserLogEvent("Failed login while updating credit", $this->user->id));
             return;
         }
         $guzzleClient = $user->getUserGuzzle();
@@ -139,13 +138,12 @@ class User extends Authenticatable
 
         $credit = $ticketSummaryHtml->find("strong[class=credit]", 0)->plaintext;
 
-        $this->credit = $credit;
+        $this->credit = trim($credit);
         $this->credit_update_time = Carbon::now();
 
         $this->save();
-        if ($command) {
-            $command->info("Users credit for ID: " . $this->id . " was successfully updated to " . $credit);
-        }
+
+        event(new UserLogEvent("Users credit with ID: " . $this->id . " was successfully updated to: " . $this->credit, $this->id));
     }
 
     public function getCreditUpdateTime() {

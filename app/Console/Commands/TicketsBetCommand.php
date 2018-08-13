@@ -20,24 +20,27 @@ class TicketsBetCommand extends Command
 
     public function handle() {
 
-        $this->info("Start betting approved tickets");
+        $this->info("Start betting prepared AND approved tickets");
 
+        // for all authorized users
         $users = User::all()
             ->where("is_authorized", "=", "1");
 
         foreach ($users as $user) {
 
+            // get user tickets
             $tickets = UserTicket::all()
                 ->where("status", "=", "approved")
                 ->where("user_id", "=", $user->id);
+
+            // approve
             foreach ($tickets as $userTicket) {
                 $userTicket->bet($this);
-                $this->info("Betting of UserTicket with ID: " . $userTicket->id . " successfully done.");
-                $random = rand(10,20);
-                sleep($random);
+//                sleep(rand(10,20));
             }
-            sleep(10);
-            $user->updateCredit($this);
+
+            // in the end update credit
+            $user->updateCredit();
         }
     }
 

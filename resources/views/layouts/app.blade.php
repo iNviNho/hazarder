@@ -86,6 +86,7 @@
                                     <a class="dropdown-item" href="/tickets" > Tickets</a>
                                     <a class="dropdown-item" href="/my-tickets" > My Tickets</a>
                                     <a class="dropdown-item" href="/settings" > Settings</a>
+                                    <a class="dropdown-item" href="/my-logs" > My Logs</a>
 
                                     <a class="dropdown-item" href="{{ route('logout') }}"
                                        onclick="event.preventDefault();

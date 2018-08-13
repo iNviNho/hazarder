@@ -8,7 +8,6 @@
 
 namespace App\Console\Commands;
 
-use App\Match;
 use App\Ticket;
 use App\User;
 use Carbon\Carbon;
@@ -22,7 +21,7 @@ class TicketsApproveCommand extends Command
 
     public function handle() {
 
-        $this->info("Approve tickets for all users for prepare tickets");
+        $this->info("Approve tickets for all users from prepared tickets");
 
         $tickets = Ticket::select(["tickets.*", "matches.date_of_game"])
             ->join('matches', 'matches.id', '=', 'tickets.match_id')
@@ -34,8 +33,7 @@ class TicketsApproveCommand extends Command
             ->where("is_authorized", "=", "1");
 
         foreach ($users as $user) {
-            $user->approveTickets($this, $tickets);
-            $this->info("Approving tickets for user with ID: " . $user->id . " done.");
+            $user->approveTickets($tickets);
         }
 
     }

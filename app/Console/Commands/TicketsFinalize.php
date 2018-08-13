@@ -37,9 +37,8 @@ class TicketsFinalize extends Command
             foreach ($userTickets->get() as $userTicket) {
                 $this->info("Running finalize for UserTicket with ID: " . $userTicket->id);
 
-                $userTicket->finalize($this);
-                $rand = rand(5, 15);
-                sleep($rand);
+                $userTicket->finalize();
+                sleep(rand(5, 15));
             }
 
         }

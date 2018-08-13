@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Events\UserLogEvent;
 use App\Services\Ticket\TicketService;
 use App\Services\User\User;
 use Carbon\Carbon;
@@ -83,7 +84,7 @@ class Ticket extends Model
                 if (!$ticket) {
                     continue;
                 }
-                $command->info("Created ticket " . $ticket->id . " of type " . $ticket->game_type);
+                $command->info("Created ticket " . $ticket->id . " of type " . $ticket->game_type . " with rate: " . $rate);
             }
 
         }

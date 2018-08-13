@@ -39,6 +39,8 @@ Route::group(["middleware" => ["auth", "authorized"]], function() {
 
     Route::get('/user/update-credit', 'UserController@updateCredit');
 
+    Route::get("/my-logs", "LogsController@showMyLogs");
+
     Route::get("/settings", "UserController@showSettings");
     Route::post("/settings", "UserController@updateSettings");
 });

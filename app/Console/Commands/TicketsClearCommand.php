@@ -8,7 +8,9 @@
 
 namespace App\Console\Commands;
 
+use App\Events\UserLogEvent;
 use App\Ticket;
+use App\UserLog;
 use App\UserTicket;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
@@ -26,17 +28,15 @@ class TicketsClearCommand extends Command
         $tickets = Ticket::whereHas('match', function ($q) {
             $q->where('date_of_game', '<=', Carbon::now()->format("Y-m-d H:i:s"));
         })
-        ->where("status", "!=", "bet")
-        ->where("status", "!=", "disapproved")
         ->where("status", "!=", "canceled")
         ->get();
 
-        // cancel tickets that were not bet and the game has already staed
+        // cancel tickets that were not bet and the game has already started
         foreach ($tickets as $ticket) {
             $ticket->status = "canceled";
             $ticket->save();
 
-            $this->info("Ticket with ID: " . $ticket->id . " was canceled because the game was already played and ticket not bet.");
+            $this->info("Ticket with ID: " . $ticket->id . " was canceled because the game has already started.");
         }
 
         // cancel user tickets that were approved but failed to be bet
@@ -46,7 +46,7 @@ class TicketsClearCommand extends Command
             $userTicket->status = "canceled";
             $userTicket->save();
 
-            $this->info("UserTicket with ID: " . $userTicket->id . " was canceled because the betting was not successful from some reason.");
+            event(new UserLogEvent("UserTicket with ID: ". $userTicket->id . " was canceled because probably betting was not successful.", $userTicket->user_id, $userTicket->id));
         }
 
     }
