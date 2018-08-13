@@ -32,6 +32,7 @@ class HomeController extends Controller
      */
     public function index()
     {
+        throw new \Exception("test");
         return view('home');
     }
 }

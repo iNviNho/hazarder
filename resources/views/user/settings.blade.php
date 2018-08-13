@@ -57,7 +57,7 @@
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label for="email" class="col-sm-4 col-form-label text-md-right">Max bet amount</label>
+                            <label for="email" class="col-sm-4 col-form-label text-md-right">Your custom background image</label>
                             <div class="col-md-6">
                                 <input type="file" class="form-control" name="bg_image">
                             </div>
