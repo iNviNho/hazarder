@@ -4,6 +4,7 @@ namespace App;
 
 use App\Events\UserLogEvent;
 use BCMathExtended\BC;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Sunra\PhpSimple\HtmlDomParser;
 

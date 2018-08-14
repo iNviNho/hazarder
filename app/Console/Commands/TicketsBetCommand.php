@@ -36,7 +36,7 @@ class TicketsBetCommand extends Command
             // approve
             foreach ($tickets as $userTicket) {
                 $userTicket->bet($this);
-//                sleep(rand(10,20));
+                sleep(rand(10,20));
             }
 
             // in the end update credit
