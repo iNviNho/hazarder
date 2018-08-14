@@ -112,7 +112,8 @@ class TicketController extends Controller
     private function getMyTicketsGrid() {
 
         $user = Auth::user();
-        $tickets = UserTicket::where("user_id", "=", $user->id);
+        $tickets = UserTicket::where("user_id", "=", $user->id)
+            ->where("status", "!=", "canceled");
 
         $columns = [
             # simple results numbering, not related to table PK or any obtained data
