@@ -252,6 +252,9 @@ class Crawler
                 $matchBet->save();
             }
 
+            // run update ticket for this match
+            $ourMatch->afterMatchBetUpdate($this->crawlCommand);
+
             // done, log
             $this->crawlCommand->info("Updated matchbets for already existing match " . $match->unique_id);
 
