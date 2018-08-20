@@ -174,7 +174,7 @@ class User extends Authenticatable
         }
 
         // get header
-        return $this->getSettings()->first()->header;
+        return ["User-Agent" => $this->getSettings()->first()->header];
     }
 
 }
