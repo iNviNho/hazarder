@@ -2,6 +2,7 @@
 namespace App;
 
 use App\Events\UserLogEvent;
+use App\Services\AppSettings;
 use Carbon\Carbon;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -67,6 +68,14 @@ class User extends Authenticatable
 
             // can we approve this ticket for this game type?
             if ($allowedGameTypesToBet[$ticket->game_type] > 0) {
+
+                // lets do a safety check if this ticket id was not already approved and made as a user ticket
+                // this will prevent having 2 user tickets for same UserTicket
+                $userTicketsForThisTicket = UserTicket::where("ticket_id", $ticket->id)->where("user_id", $this->id)->count();
+                if ($userTicketsForThisTicket > 0) {
+                    // continue to next iteration and dont process this ticket
+                    continue;
+                }
 
                 $userTicket = new UserTicket();
                 $userTicket->status = "approved";
@@ -148,6 +157,24 @@ class User extends Authenticatable
 
     public function getCreditUpdateTime() {
         return Carbon::createFromTimeString($this->credit_update_time);
+    }
+
+    public function getHeader() {
+
+        $settings = $this->getSettings()->first();
+        // if header is null, append one
+        if (is_null($settings->header)) {
+            $countHeaders = count(AppSettings::getUserHeaders());
+            $random = rand(1, $countHeaders);
+            $newHeader = AppSettings::getUserHeaders()[$random];
+            $settings->header = $newHeader;
+
+            //save new header
+            $settings->save();
+        }
+
+        // get header
+        return $this->getSettings()->first()->header;
     }
 
 }

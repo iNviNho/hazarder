@@ -179,11 +179,11 @@ class Crawler
                     foreach ($bets as $key => $bet) {
 
                         $matchBet = new MatchBet();
-                        $matchBet->name = $bet->find("span[class=tip]", 0)->plaintext;
+                        $matchBet->name = trim($bet->find("span[class=tip]", 0)->plaintext);
                         $matchBet->value = trim($bet->find("span[class=odd]", 0)->plaintext);
 
-                        $matchBet->datainfo = $bet->getAttribute("data-info");
-                        $matchBet->dataodd = $bet->getAttribute("data-odd");
+                        $matchBet->datainfo = trim($bet->getAttribute("data-info"));
+                        $matchBet->dataodd = trim($bet->getAttribute("data-odd"));
 
                         $match->getMatchBets()->save($matchBet);
                     }
@@ -242,15 +242,18 @@ class Crawler
                 // lets get OUR matchbet
                 $matchBet = MatchBet::where("dataodd", "=", $bet->getAttribute("data-odd"))->first();
 
-                $matchBet->name = $bet->find("span[class=tip]", 0)->plaintext;
+                $matchBet->name = trim($bet->find("span[class=tip]", 0)->plaintext);
                 $matchBet->value = trim($bet->find("span[class=odd]", 0)->plaintext);
 
-                $matchBet->dataodd = $bet->getAttribute("data-odd");
+                $matchBet->dataodd = trim($bet->getAttribute("data-odd"));
 
                 $matchBet->updated_at = Carbon::now();
 
                 $matchBet->save();
             }
+
+            // run update ticket for this match
+            $ourMatch->afterMatchBetUpdate($this->crawlCommand);
 
             // done, log
             $this->crawlCommand->info("Updated matchbets for already existing match " . $match->unique_id);

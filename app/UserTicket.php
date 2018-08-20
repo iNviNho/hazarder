@@ -52,7 +52,13 @@ class UserTicket extends Model
 
             // lets try only one more time
             try {
-                $this->realbet($user);
+
+                // and try ONLY if it failed before bet POST request which would set status to "bet"
+                if ($this->status != "bet") {
+                    $this->realbet($user);
+                } else {
+                    event(new UserLogEvent("Failed bet for the second time while betting UserTicket with ID: " . $this->id . " but bet was sucessfuly placed!"));
+                }
             } catch(\Throwable $e) {
                 event(new UserLogEvent("Failed bet for the second time while betting UserTicket with ID: " . $this->id . " Exception: " . $e->getMessage(), $this->user->id, $this->id));
                 return;
@@ -98,6 +104,7 @@ class UserTicket extends Model
         // BOOM BET
         $guzzleClient->post(env("BASE_TICKET_SUBMIT_URL") . $now, $data);
 
+        // after successfull post request we should have this ticket bet
         $this->status = "bet";
 
         // after bet we take a first ticket from tickets and set it to ticket as external link

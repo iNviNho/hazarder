@@ -90,18 +90,18 @@ class Ticket extends Model
         }
 
         // we should bet on opposite
-        if ($betOppositeMatchBetID != false) {
-
-            // we take
-            if ($match->type == "normal" || $match->type == "goldengame" || $match->type == "simple") {
-
-                $ticket = self::createAndInsertTicket($match, $betOppositeMatchBetID, "prepared", "tobeplayed", "opposite");
-                if (!$ticket) {
-                    return;
-                }
-                $command->info("Created ticket " . $ticket->id . " of type " . $ticket->game_type);
-            }
-        }
+//        if ($betOppositeMatchBetID != false) {
+//
+//            // we take
+//            if ($match->type == "normal" || $match->type == "goldengame" || $match->type == "simple") {
+//
+//                $ticket = self::createAndInsertTicket($match, $betOppositeMatchBetID, "prepared", "tobeplayed", "opposite");
+//                if (!$ticket) {
+//                    return;
+//                }
+//                $command->info("Created ticket " . $ticket->id . " of type " . $ticket->game_type);
+//            }
+//        }
 
     }
 

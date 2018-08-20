@@ -15,4 +15,28 @@ class Match extends Model
         return $this->hasMany('App\MatchBet');
     }
 
+    public function afterMatchBetUpdate($command) {
+
+        // get all tickets that were bet on this game
+        $tickets = Ticket::where("match_id", $this->id)->get();
+
+        // for all tickets
+        foreach ($tickets as $ticket) {
+
+            // check if ticket was not bet already
+            $userTickets = UserTicket::where("ticket_id", $ticket->id);
+
+            // if this ticket was not bet already
+            if ($userTickets->count() < 1) {
+
+                // lets delete it so it can be recreated with nearest tickets:prepare command
+                $ticket->delete();
+
+                $command->info("Ticket with ID: " . $ticket->id . " was successfully deleted after matchbets were updated");
+            }
+
+        }
+
+    }
+
 }
