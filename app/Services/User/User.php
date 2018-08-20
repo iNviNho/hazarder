@@ -24,14 +24,19 @@ class User
     /** @var \App\User */
     private $user;
 
+    /** @var mixed  */
+    private $userHeader;
+
     public function __construct(\App\User $user)
     {
         $this->user = $user;
         // when working with user we should always have cookies prepared
         $this->cookieJar = new FileCookieJar("cookie_jar_" . $this->user->id . ".txt", TRUE);
+        // get user header
+        $this->userHeader = $user->getHeader();
         // every request from this class will use its cookies
         $this->guzzleClient = new Client([
-            'headers' => AppSettings::getHeaders(),
+            'headers' => $this->userHeader,
             "cookies" => $this->cookieJar
         ]);
 
@@ -79,7 +84,7 @@ class User
 
         // every request from this class will use its cookies
         $this->guzzleClient = new Client([
-            'headers' => AppSettings::getHeaders(),
+            'headers' => $this->userHeader,
             "cookies" => $this->cookieJar,
             'allow_redirects' => false
         ]);
