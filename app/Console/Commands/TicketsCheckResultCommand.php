@@ -28,14 +28,16 @@ class TicketsCheckResultCommand extends Command
 
         foreach ($users as $user) {
 
-            $userTickets = UserTicket::where("status", "=", "bet")
-                ->where("user_id", "=", $user->id)
-                ->whereHas("ticket", function($query) {
-                    $query->whereHas("match", function($query) {
-                        // check result only after 2 and half hours after game has started
-                        $query->where("date_of_game", ">=", Carbon::now()->addMinutes(150)->format("Y-m-d H:i:s"));
-                    });
-                });
+//            $userTickets = UserTicket::where("status", "=", "bet")
+//                ->where("user_id", "=", $user->id)
+//                ->whereHas("ticket", function($query) {
+//                    $query->whereHas("match", function($query) {
+//                        // check result only after 2 and half hours after game has started
+//                        $query->where("date_of_game", ">=", Carbon::now()->addMinutes(150)->format("Y-m-d H:i:s"));
+//                    });
+//                });
+                $userTickets = UserTicket::where("status", "=", "bet")
+                    ->where("user_id", "=", $user->id);
 
             foreach ($userTickets->get() as $userTicket) {
                 $userTicket->tryToCheckResult($this);
