@@ -5,6 +5,7 @@
     SSLEngine on
     SSLCertificateFile /etc/ssl/private/hazarder.vladino.me.crt
     SSLCertificateKeyFile /etc/ssl/private/hazarder.vladino.me.key
+    SSLCertificateChainFile /etc/ssl/private/hazarder.vladino.me.chain.pem
 
     <Directory "/var/www/html">
         Options FollowSymLinks

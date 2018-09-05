@@ -8,7 +8,7 @@ services:
       - nginxdb_proxy
     volumes:
       - .:/var/www/html
-      - /etc/letsencrypt/archive/hazarder.vladino.me:/etc/ssl/private
+      - /etc/letsencrypt/archive/certs:/etc/ssl/private
     command: /var/www/html/init-production.sh
     restart: always
     ports:
