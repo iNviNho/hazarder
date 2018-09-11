@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateUserLogsTable extends Migration
+class CreateMarcingaleUserRoundsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,16 +13,15 @@ class CreateUserLogsTable extends Migration
      */
     public function up()
     {
-        Schema::create('user_logs', function (Blueprint $table) {
+        Schema::create('marcingale_user_rounds', function (Blueprint $table) {
             $table->increments('id');
-
-            $table->text("info");
-
-            $table->unsignedInteger("user_ticket_id")->nullable();
-            $table->foreign('user_ticket_id')->references('id')->on('user_tickets');
 
             $table->unsignedInteger("user_id");
             $table->foreign('user_id')->references('id')->on('users');
+
+            $table->integer("level_finished"); // at which level round finished
+
+            $table->string("status");
 
             $table->timestamps();
         });
@@ -35,6 +34,6 @@ class CreateUserLogsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('user_logs');
+        Schema::dropIfExists('marcingale_user_rounds');
     }
 }

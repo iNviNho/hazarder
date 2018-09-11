@@ -9,6 +9,7 @@
 namespace App\Console\Commands;
 
 use App\Events\UserLogEvent;
+use App\MarcingaleUserTicket;
 use App\Ticket;
 use App\UserLog;
 use App\UserTicket;
@@ -47,6 +48,17 @@ class TicketsClearCommand extends Command
             $userTicket->save();
 
             event(new UserLogEvent("UserTicket with ID: ". $userTicket->id . " was canceled because probably betting was not successful.", $userTicket->user_id, $userTicket->id));
+        }
+
+        //
+        $marcingaleUserTickets = MarcingaleUserTicket::where([
+            "status" => "bet"
+        ])->get();
+        foreach ($marcingaleUserTickets as $marUserTicket) {
+            if ($marUserTicket->userTicket()->first()->status == "canceled") {
+                $marUserTicket->status = "canceled";
+                $marUserTicket->save();
+            }
         }
 
     }

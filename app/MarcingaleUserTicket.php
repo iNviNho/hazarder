@@ -21,30 +21,50 @@ class MarcingaleUserTicket extends Model
     }
 
     /**
-     * This function just returns false if new round should start
+     * This function just returns true if new marcingale ticket round should started
+     * Or returns marcingale ticket round that should follow
      * @param $user
      * @return boolean
+     * @return MarcingaleUserRound
+     * @throws Exception
      */
     public static function shouldWeCreateNewMarcingaleTicketRound($user) {
 
-        // can we continue any new MarcingaleTicket already?
-        // wtf magic
-        $magic = DB::table(DB::raw('marcingale_user_tickets as s1'))
-            ->join(
-                DB::raw('(SELECT round, MAX(level) AS level FROM marcingale_user_tickets GROUP BY round) as s2'),
-                function($query) {
-                    $query->on('s1.round', '=', 's2.round')
-                        ->on('s1.level', '=', 's2.level');
-                })
-            ->where("status", "=", "needy")
-            ->where("user_id","=", $user->id)
-            ->count();
+        // lets get every marcingale user round that is not finished = OPEN
+        $marcingaleUserRounds = MarcingaleUserRound::where([
+            "user_id" => $user->id,
+            "status" => "open"
+        ])
+        ->orderBy("created_at", "ASC")
+        ->get();
 
-        if ($magic == 0) {
-            return true;
-        } else {
-            return false;
+
+        // lets loop through all
+        foreach ($marcingaleUserRounds as $marUserRound) {
+
+            // now we have to get the oldest one user ticket
+            $marcingaleUserTicket = MarcingaleUserTicket::where([
+                    "marcingale_user_round_id" => $marUserRound->id
+            ])
+            ->orderBy("created_at", "DESC")
+            ->first();
+//            dd($marcingaleUserTicket);
+
+            // and lets find out if by any chance was not user ticket either:
+            // a) canceled by some error so we have to continue with the marcingale
+            // b) or it was bet and done and since we have only open rounds, this must be failed
+            $status = $marcingaleUserTicket->userTicket()->first()->status;
+            if ( in_array($status, ["canceled", "betanddone"]) ) {
+                if ($marcingaleUserTicket->userTicket()->first()->bet_win < 1) {
+//                    dd($marUserRound);
+                    return $marUserRound;
+                }
+                throw new \Exception("This should never happen" . json_encode($marcingaleUserTicket));
+            }
+
         }
+
+        return true;
     }
 
     public static function createFreshMarcingaleUserTicketRound($user) {
@@ -58,24 +78,19 @@ class MarcingaleUserTicket extends Model
         return $marcingaleUserTicket;
     }
 
-    public static function createContinuousMarcingaleUserTicketRound($user) {
+    public static function createContinuousMarcingaleUserTicketRound($user, MarcingaleUserRound $marcingaleTicketRound) {
 
-        $needyMarcingaleUserTicket = DB::table(DB::raw('marcingale_user_tickets as s1'))
-            ->join(
-                DB::raw('(SELECT round, MAX(level) AS level FROM marcingale_user_tickets GROUP BY round) as s2'),
-                function($query) {
-                    $query->on('s1.round', '=', 's2.round')
-                        ->on('s1.level', '=', 's2.level');
-                })
-            ->where("status", "=", "needy")
-            ->where("user_id","=", $user->id)
-            ->first();
+        $doneLevels = 0;
+        foreach ($marcingaleTicketRound->getMarcingaleUserTickets()->get() as $marTicket) {
+            if ($marTicket->userTicket()->first()->status != "canceled") {
+                $doneLevels++;
+            }
+        }
 
         $marcingaleUserTicket = new MarcingaleUserTicket();
         $marcingaleUserTicket->user_id = $user->id;
-        $marcingaleUserTicket->level = $needyMarcingaleUserTicket->level + 1;
-        $marcingaleUserTicket->round = $needyMarcingaleUserTicket->round;
-        $marcingaleUserTicket->status = "bet";
+        $marcingaleUserTicket->level = $doneLevels + 1;
+        $marcingaleUserTicket->marcingale_user_round_id = $marcingaleTicketRound->id;
 
         return $marcingaleUserTicket;
     }

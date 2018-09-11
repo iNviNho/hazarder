@@ -88,11 +88,13 @@ class User extends Authenticatable
                 // we use different code and flow for marcingale
                 if ($ticket->game_type == "marcingale") {
 
-                    if (MarcingaleUserTicket::shouldWeCreateNewMarcingaleTicketRound($this)) {
+
+                    $shouldWeCreateNewMarcingaleTicketRound = MarcingaleUserTicket::shouldWeCreateNewMarcingaleTicketRound($this);
+                    if (MarcingaleUserTicket::shouldWeCreateNewMarcingaleTicketRound($this) === true) {
                         $marcingaleUserTicket = MarcingaleUserTicket::createFreshMarcingaleUserTicketRound($this);
                         $userTicket->bet_amount = $userSettings->bet_amount;
                     } else {
-                        $marcingaleUserTicket = MarcingaleUserTicket::createContinuousMarcingaleUserTicketRound($this);
+                        $marcingaleUserTicket = MarcingaleUserTicket::createContinuousMarcingaleUserTicketRound($this, $shouldWeCreateNewMarcingaleTicketRound);
                         $userTicket->bet_amount = MarcingaleUserTicket::getBetAmountForContinuousUserTicket($userSettings->bet_amount, $marcingaleUserTicket->level);
                     }
 
@@ -111,6 +113,9 @@ class User extends Authenticatable
                 $userTicket->bet_possible_clear_win = bcsub($userTicket->bet_possible_win, $userTicket->bet_amount, "2");
 
                 $userTicket->bet_win = 0; // default we always obviously won 0 so far
+
+//                dump($marcingaleUserTicket);
+//                dd($userTicket);
 
                 $userTicket->save();
 
