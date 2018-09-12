@@ -10,6 +10,7 @@ namespace App\Console\Commands;
 
 use App\Ticket;
 use App\User;
+use App\UserTicket;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 
@@ -20,6 +21,9 @@ class TicketsApproveCommand extends Command
     protected $description = "Approve tickets";
 
     public function handle() {
+
+//        UserTicket::all()->where("id", 835)->first()->loose();
+//        die();
 
         $this->info("Approve tickets for all users from prepared tickets");
 

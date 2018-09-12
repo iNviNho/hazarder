@@ -214,7 +214,7 @@ class UserTicket extends Model
         }
     }
 
-    private function win() {
+    public function win() {
 
         $this->bet_win = 1;
         $this->status = "betanddone";
@@ -226,7 +226,7 @@ class UserTicket extends Model
         }
     }
 
-    private function loose() {
+    public function loose() {
 
         $this->bet_win = -1;
         $this->status = "betanddone";

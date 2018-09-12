@@ -15,6 +15,11 @@ class MarcingaleUserTicket extends Model
         return $this->belongsTo('App\UserTicket');
     }
 
+    public function marcingaleUserRound()
+    {
+        return $this->belongsTo('App\MarcingaleUserRound');
+    }
+
     public function user()
     {
         return $this->belongsTo('App\User');
@@ -48,7 +53,6 @@ class MarcingaleUserTicket extends Model
             ])
             ->orderBy("created_at", "DESC")
             ->first();
-//            dd($marcingaleUserTicket);
 
             // and lets find out if by any chance was not user ticket either:
             // a) canceled by some error so we have to continue with the marcingale
@@ -56,7 +60,6 @@ class MarcingaleUserTicket extends Model
             $status = $marcingaleUserTicket->userTicket()->first()->status;
             if ( in_array($status, ["canceled", "betanddone"]) ) {
                 if ($marcingaleUserTicket->userTicket()->first()->bet_win < 1) {
-//                    dd($marUserRound);
                     return $marUserRound;
                 }
                 throw new \Exception("This should never happen" . json_encode($marcingaleUserTicket));
@@ -69,11 +72,17 @@ class MarcingaleUserTicket extends Model
 
     public static function createFreshMarcingaleUserTicketRound($user) {
 
+        $marcingaleUserRound = new MarcingaleUserRound();
+        $marcingaleUserRound->user_id = $user->id;
+        $marcingaleUserRound->level_finished = 1;
+        $marcingaleUserRound->status = "open";
+
+        $marcingaleUserRound->save();
+
         $marcingaleUserTicket = new MarcingaleUserTicket();
         $marcingaleUserTicket->user_id = $user->id;
         $marcingaleUserTicket->level = 1;
-        $marcingaleUserTicket->round = self::getNewRoundID();
-        $marcingaleUserTicket->status = "bet";
+        $marcingaleUserTicket->marcingale_user_round_id = $marcingaleUserRound->id;
 
         return $marcingaleUserTicket;
     }
@@ -95,18 +104,6 @@ class MarcingaleUserTicket extends Model
         return $marcingaleUserTicket;
     }
 
-    private static function getNewRoundID() {
-
-        $maxRound = MarcingaleUserTicket::max("round");
-
-        if (is_null($maxRound)) {
-            return 1;
-        } else {
-            $maxRound += 1;
-            return $maxRound;
-        }
-    }
-
     public static function getBetAmountForContinuousUserTicket($betAmount, $level) {
 
         $previousBet = $betAmount;
@@ -121,21 +118,31 @@ class MarcingaleUserTicket extends Model
 
         $marcingaleUserTicket = MarcingaleUserTicket::where("user_ticket_id", "=", $userTicket->id)->first();
 
+
         if ($userTicket->bet_win == 1) {
-            $marcingaleUserTicket->status = "success";
+
+            $marcingaleUserRound = $marcingaleUserTicket->marcingaleUserRound()->first();
+
+            $marcingaleUserRound->status = "success";
+            $marcingaleUserRound->level_finished = $marcingaleUserTicket->level;
+
         } elseif ($userTicket->bet_win == -1) {
 
-            $user = User::where("id", "=", $userTicket->user_id)->first();
-            $maxMarcingaleLevel = $user->getSettings()->first()->max_marcingale_level;
+            $marcingaleUserRound = $marcingaleUserTicket->marcingaleUserRound()->first();
 
-            if ($marcingaleUserTicket->level >= trim($maxMarcingaleLevel)) {
-                $marcingaleUserTicket->status = "failed";
+            $user = User::where("id", "=", $userTicket->user_id)->first();
+            $maxMarcingaleLevel = trim($user->getSettings()->first()->max_marcingale_level);
+
+            if ($marcingaleUserRound->level_finished >= $maxMarcingaleLevel) {
+                $marcingaleUserRound->status = "failed";
             } else {
-                $marcingaleUserTicket->status = "needy";
+                $marcingaleUserRound->status = "open";
+                $marcingaleUserRound->level_finished = $marcingaleUserTicket->level + 1;
             }
+
         }
 
-        $marcingaleUserTicket->save();
+        $marcingaleUserRound->save();
     }
 
 }

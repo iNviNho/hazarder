@@ -114,9 +114,6 @@ class User extends Authenticatable
 
                 $userTicket->bet_win = 0; // default we always obviously won 0 so far
 
-//                dump($marcingaleUserTicket);
-//                dd($userTicket);
-
                 $userTicket->save();
 
                 // dont forget to set user_ticket_id for marcingale user tickets
