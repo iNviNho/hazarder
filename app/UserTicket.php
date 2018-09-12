@@ -79,7 +79,22 @@ class UserTicket extends Model
         $guzzleClient->get(env("BASE_TICKET_CLEAR_URL") . $now);
 
         // add to basket
-        $guzzleClient->get(env("BASE_BET_URL") . $this->ticket->matchbet->datainfo . "&tip_id=" . $this->ticket->matchbet->dataodd . "&value=" . trim($this->bet_rate) . "&kind=MAIN&_ts=" . $now);
+        $res = $guzzleClient->get(env("BASE_BET_URL") . $this->ticket->matchbet->datainfo . "&tip_id=" . $this->ticket->matchbet->dataodd . "&value=" . trim($this->bet_rate) . "&kind=MAIN&_ts=" . $now);
+
+        // lets check if there is not error
+        $body = $res->getBody()->getContents();
+        $exists = strpos($body, "errors");
+        // there is error!
+        if ($exists !== false) {
+            $this->status = "canceled";
+            $this->save();
+
+            event(new UserLogEvent("Failed bet of UserTicket with ID: " . $this->id . " for game type: " . $this->ticket->game_type .
+                "Add to basket failed with error: ". json_encode($body)
+                , $this->user->id, $this->id));
+
+            return;
+        }
 
         // here we can do check if we have 1 number in #fixed-ticket-link span.value -> plaintext
 //        $result = $guzzleClient->get(env("BASE_TODAY_GROUPS_URL"));
