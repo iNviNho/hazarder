@@ -61,6 +61,10 @@ class UserTicket extends Model
                 }
             } catch(\Throwable $e) {
                 event(new UserLogEvent("Failed bet for the second time while betting UserTicket with ID: " . $this->id . " Exception: " . $e->getMessage(), $this->user->id, $this->id));
+                if (env("SENTRY_LARAVEL_SHOULD_REPORT")) {
+                    $client = new \Raven_Client(env("SENTRY_LARAVEL_DSN"));
+                    $client->captureException($e);
+                }
                 return;
             }
         }
