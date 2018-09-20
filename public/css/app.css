@@ -70,3 +70,50 @@
     display: inline-block;
     padding: 5px 10px;
 }
+
+.marcingale-rounds-content .row {
+    margin-left: 0px!important;
+    margin-right: 0px!important;
+}
+
+.marcingale-round-wrapper {
+}
+
+.marcingale-detailed-wrapper {
+    border: 1px solid #000000;
+    border-bottom: 0px;
+    padding: 10px 0px;
+    cursor: pointer;
+}
+
+.marcingale-detailed-tickets {
+    display: none;
+    margin-bottom: 40px;
+}
+
+.marcingale-detailed-tickets .header {
+    background: #000000;
+    color: #FFF;
+}
+
+.marcingale-detailed-tickets > .row{
+    padding: 8px 0px;
+    border: 1px solid #000000;
+    border-bottom: 0px;
+}
+
+.marcingale-detailed-tickets > .row:last-child {
+    border-bottom: 1px solid #000000;
+}
+
+.marcingale-detailed-tickets .alert-success {
+    background-color: rgba(195,230,203, .2);
+}
+
+.marcingale-detailed-tickets .alert-danger {
+    background-color: rgba(248,215,218, .4);
+}
+
+.marcingale-detailed-tickets .alert-info {
+    background-color: rgba(209,236,241, .3);
+}

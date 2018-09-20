@@ -50,8 +50,10 @@
                                     <tr>
                                         <td>Profit</td><td><strong>{{$gameType["profit"]}}</strong></td>
                                     </tr>
-
                                 </table>
+                                @if ($gameTypeName == "marcingale")
+                                    <a href="/dashboard/marcingale/detailed" class="btn btn-primary">MARCINGALE DETAILED STATISTICS</a>
+                                @endif
                             </div>
                         </div>
                     </div>
