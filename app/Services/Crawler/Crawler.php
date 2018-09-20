@@ -207,7 +207,7 @@ class Crawler
                     }
 
                     // we do not want single game types and weird types anymore
-                    if ($match->type == "weird" || $match->type == "single") {
+                    if ($match->type == "weird" || $match->type == "single" || is_null($match->teama) || is_null($match->teamb)) {
                         $match->delete();
                         $this->crawlCommand->info("Parsed but deleted " . $match->type .  " game type for " . $match->unique_id);
                     } else {
