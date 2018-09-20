@@ -14,10 +14,10 @@ class Ticket extends Model
 {
 
     public static $GAME_TYPES = [
+        "marcingale",
         "oneten",
         "onetwenty",
-        "marcingale",
-        "opposite",
+//        "opposite",
     ];
 
     /**
