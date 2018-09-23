@@ -104,14 +104,16 @@ class MarcingaleUserTicket extends Model
         return $marcingaleUserTicket;
     }
 
-    public static function getBetAmountForContinuousUserTicket($betAmount, $level) {
+    public static function getBetAmountForContinuousUserTicket(MarcingaleUserRound $marRound, $level) {
 
-        $previousBet = $betAmount;
-        for ($i = 2; $i <= $level; $i++) {
-            $previousBet = bcmul($previousBet, 2, 2);
+        $startedAmountOfThisRound = $marRound->getMarcingaleUserTickets()->get()->last()->userTicket()->first()->bet_amount;
+
+        $betAmount = $startedAmountOfThisRound;
+        for ($i = 1; $i < $level; $i++) {
+            $betAmount = bcmul($betAmount, 2, 2);
         }
 
-        return $previousBet;
+        return $betAmount;
     }
 
     public static function treatBetAndDoneUserTicket($userTicket) {
