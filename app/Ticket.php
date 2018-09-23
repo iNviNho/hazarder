@@ -2,13 +2,9 @@
 
 namespace App;
 
-use App\Events\UserLogEvent;
 use App\Services\Ticket\TicketService;
-use App\Services\User\User;
-use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model;
-use Sunra\PhpSimple\HtmlDomParser;
 
 class Ticket extends Model
 {
@@ -17,7 +13,6 @@ class Ticket extends Model
         "marcingale",
         "oneten",
         "onetwenty",
-//        "opposite",
     ];
 
     /**
@@ -43,7 +38,6 @@ class Ticket extends Model
      */
     public static function tryToCreateTicketFromMatch(Match $match, Command $command) {
 
-        $betOppositeMatchBetID = false;
         foreach ($match->getMatchBets()->get() as $matchBet) {
 
             $rate = trim($matchBet->value);
@@ -53,7 +47,6 @@ class Ticket extends Model
             // if $rate <= 1.10
             if ( (bccomp($rate, "1.11", 2) == -1) && ($rate != "")) {
                 $game_type = "oneten";
-                $betOppositeMatchBetID = $matchBet->id;
             }
 
             // type of twotwenty
@@ -88,20 +81,6 @@ class Ticket extends Model
             }
 
         }
-
-        // we should bet on opposite
-//        if ($betOppositeMatchBetID != false) {
-//
-//            // we take
-//            if ($match->type == "normal" || $match->type == "goldengame" || $match->type == "simple") {
-//
-//                $ticket = self::createAndInsertTicket($match, $betOppositeMatchBetID, "prepared", "tobeplayed", "opposite");
-//                if (!$ticket) {
-//                    return;
-//                }
-//                $command->info("Created ticket " . $ticket->id . " of type " . $ticket->game_type);
-//            }
-//        }
 
     }
 

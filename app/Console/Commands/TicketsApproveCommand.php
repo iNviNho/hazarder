@@ -22,9 +22,6 @@ class TicketsApproveCommand extends Command
 
     public function handle() {
 
-//        UserTicket::all()->where("id", 835)->first()->loose();
-//        die();
-
         $this->info("Approve tickets for all users from prepared tickets");
 
         $tickets = Ticket::select(["tickets.*", "matches.date_of_game"])

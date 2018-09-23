@@ -95,7 +95,7 @@ class User extends Authenticatable
                         $userTicket->bet_amount = $userSettings->bet_amount;
                     } else {
                         $marcingaleUserTicket = MarcingaleUserTicket::createContinuousMarcingaleUserTicketRound($this, $shouldWeCreateNewMarcingaleTicketRound);
-                        $userTicket->bet_amount = MarcingaleUserTicket::getBetAmountForContinuousUserTicket($userSettings->bet_amount, $marcingaleUserTicket->level);
+                        $userTicket->bet_amount = MarcingaleUserTicket::getBetAmountForContinuousUserTicket($shouldWeCreateNewMarcingaleTicketRound, $marcingaleUserTicket->level);
                     }
 
                 } else {
