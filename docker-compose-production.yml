@@ -2,8 +2,8 @@ version: '3'
 
 services:
   hazarder-apache:
-    image: hazarder_production:latest
-    container_name: hazarder
+    image: vladino.me:5000/hazarder:production
+    container_name: hazarder_production
     networks:
       - nginxdb_proxy
     volumes:

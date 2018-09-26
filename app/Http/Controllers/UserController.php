@@ -38,6 +38,12 @@ class UserController extends Controller
             $values["bg_image"] = $settings->bg_image;
         }
 
+        if (array_key_exists("marcingale_finish", $values) && $values["marcingale_finish"] == "on") {
+            $values["marcingale_finish"] = 1;
+        } else {
+            $values["marcingale_finish"] = 0;
+        }
+
         $settings->update($values);
 
         $request->session()->flash('msg', 'Settings successfully update!');

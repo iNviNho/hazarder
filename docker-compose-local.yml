@@ -2,13 +2,13 @@ version: '3'
 
 services:
   hazarder-apache:
-    image: hazarder_master:latest
-    container_name: hazarder
+    image: vladino.me:5000/hazarder:local
+    container_name: hazarder_local
     networks:
       - nginxdb_proxy
     volumes:
       - .:/var/www/html
-    command: /var/www/html/init-master.sh
+    command: /var/www/html/init-local.sh
     restart: always
     expose:
       - 80

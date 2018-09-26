@@ -45,6 +45,12 @@
                             </div>
                         </div>
                         <div class="form-group row">
+                            <label for="email" class="col-sm-4 col-form-label text-md-right">Marcingale finish</label>
+                            <div class="col-md-6">
+                                <input type="checkbox" style="width: 25px; height: 25px;" name="marcingale_finish" @if ($settings->marcingale_finish == 1) checked @endif>
+                            </div>
+                        </div>
+                        <div class="form-group row">
                             <label for="email" class="col-sm-4 col-form-label text-md-right">Max one opposite open bets</label>
                             <div class="col-md-6">
                                 <input type="text" class="form-control" name="max_opposite" value="{{$settings->max_opposite}}" required autofocus>
