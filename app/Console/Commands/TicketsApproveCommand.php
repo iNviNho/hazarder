@@ -10,7 +10,6 @@ namespace App\Console\Commands;
 
 use App\Ticket;
 use App\User;
-use App\UserTicket;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 

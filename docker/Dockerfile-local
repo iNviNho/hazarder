@@ -4,9 +4,7 @@ RUN a2enmod rewrite
 
 RUN apt-get update
 
-RUN apt-get install -y git
-
-RUN apt-get install -y cron curl libicu-dev libxml2-dev libgmp-dev zlib1g-dev libgpgme11-dev && \
+RUN apt-get install -y nano git cron curl libicu-dev libxml2-dev libgmp-dev zlib1g-dev libgpgme11-dev && \
     docker-php-ext-install \
     gmp \
     pdo_mysql \
@@ -14,14 +12,8 @@ RUN apt-get install -y cron curl libicu-dev libxml2-dev libgmp-dev zlib1g-dev li
     intl \
     bcmath
 
-RUN apt-get install -y nano
-
-RUN pecl install gnupg xdebug && \
-    docker-php-ext-enable gnupg xdebug
-
 COPY docker/vhost /etc/apache2/sites-enabled/000-default.conf
 
-RUN mkdir -p /deploy/vendor_override /deploy/tests
 COPY ./composer.json ./composer.phar /deploy/
 
 WORKDIR /deploy

@@ -57,7 +57,7 @@ class UserTicket extends Model
                 if ($this->status != "bet") {
                     $this->realbet($user);
                 } else {
-                    event(new UserLogEvent("Failed bet for the second time while betting UserTicket with ID: " . $this->id . " but bet was sucessfuly placed!"));
+                    event(new UserLogEvent("Failed bet for the second time while betting UserTicket with ID: " . $this->id . " but bet was sucessfuly placed!", $this->user->id));
                 }
             } catch(\Throwable $e) {
                 event(new UserLogEvent("Failed bet for the second time while betting UserTicket with ID: " . $this->id . " Exception: " . $e->getMessage(), $this->user->id, $this->id));
