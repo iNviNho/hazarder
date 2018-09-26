@@ -88,9 +88,13 @@ class User extends Authenticatable
                 // we use different code and flow for marcingale
                 if ($ticket->game_type == "marcingale") {
 
-
                     $shouldWeCreateNewMarcingaleTicketRound = MarcingaleUserTicket::shouldWeCreateNewMarcingaleTicketRound($this);
                     if (MarcingaleUserTicket::shouldWeCreateNewMarcingaleTicketRound($this) === true) {
+                        // if user did set finish marcingale to 1, we dont create new marcingale user tickets
+                        if ($this->getSettings()->first()->marcingale_finish == 1) {
+                            continue;
+                        }
+
                         $marcingaleUserTicket = MarcingaleUserTicket::createFreshMarcingaleUserTicketRound($this);
                         $userTicket->bet_amount = $userSettings->bet_amount;
                     } else {
