@@ -127,7 +127,13 @@ class TicketController extends Controller
                 ->setLabel('Match')
                 ->setCallback(function ($val, $row) {
                     $alink = "<a href='/match/" . $row->getSrc()->ticket->match->id . "' >" . $row->getSrc()->ticket->match->name . "</a>";
-                    $alink .= " <a href='" . $row->getSrc()->getLinkToBettingSite() . "' style='padding-left: 20px;' target='_blank'><img width='25px' src='images/logo.png'> </a> ";
+                    return $alink;
+                }),
+            (new FieldConfig())
+                ->setName('match')
+                ->setLabel('Link')
+                ->setCallback(function ($val, $row) {
+                    $alink = " <a href='" . $row->getSrc()->getLinkToBettingSite() . "' target='_blank'><img width='25px' src='images/logo.png'> </a> ";
                     return $alink;
                 }),
             (new FieldConfig())

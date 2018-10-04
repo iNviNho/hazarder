@@ -3,7 +3,9 @@
 namespace App\Exceptions;
 
 use Exception;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Validation\ValidationException;
 
 class Handler extends ExceptionHandler
 {
@@ -13,7 +15,9 @@ class Handler extends ExceptionHandler
      * @var array
      */
     protected $dontReport = [
-        //
+        AuthenticationException::class,
+        ValidationException::class
+
     ];
 
     /**
@@ -36,9 +40,13 @@ class Handler extends ExceptionHandler
      */
     public function report(Exception $exception)
     {
-        if (env("SENTRY_LARAVEL_SHOULD_REPORT")) {
-            $client = new \Raven_Client(env("SENTRY_LARAVEL_DSN"));
-            $client->captureException($exception);
+
+        // report only the ones we want
+        if (!in_array(get_class($exception), $this->dontReport)) {
+            if (env("SENTRY_LARAVEL_SHOULD_REPORT")) {
+                $client = new \Raven_Client(env("SENTRY_LARAVEL_DSN"));
+                $client->captureException($exception);
+            }
         }
 
         parent::report($exception);
