@@ -26,6 +26,18 @@ class UserTicket extends Model
         return $this->belongsTo('App\User');
     }
 
+    public function getLinkToBettingSite() {
+
+        $externalTicketId = $this->external_ticket_id;
+
+        // some weird pattern replace
+        $externalTicketId = str_replace("_", "%2F", $externalTicketId);
+
+        $link = env("BASE_TICKET_SHOW") . $externalTicketId . "&kind=MAIN";
+
+        return $link;
+    }
+
     /**
      * Lets bet this ticket
      */
@@ -159,7 +171,7 @@ class UserTicket extends Model
             return;
         }
 
-        $url = env("BASE_TICKET_SHOW") . $this->external_ticket_id . "&kind=MAIN";
+        $url = $this->getLinkToBettingSite();
 
         $ticketRequest = $user->getUserGuzzle()->get($url);
 
@@ -208,7 +220,7 @@ class UserTicket extends Model
             return;
         }
 
-        $url = env("BASE_TICKET_SHOW") . $this->external_ticket_id . "&kind=MAIN";
+        $url = $this->getLinkToBettingSite();
 
         $ticketRequest = $user->getUserGuzzle()->get($url);
 
