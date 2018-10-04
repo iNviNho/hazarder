@@ -41,14 +41,14 @@ class HomeController extends Controller
         $user = Auth::user();
 
         $to = Carbon::now();
-        if ($name == "week") {
-            $from = Carbon::now()->subDay(7)->setTime(0,0);
+        if ($name == "today") {
+            $from = Carbon::now()->setTime(0,0);
         } elseif ($name == "month") {
             $from = Carbon::now()->subMonth(1);
         } elseif ($name == "year") {
             $from = Carbon::now()->subYear(1);
         } else {
-            $from = Carbon::now()->setTime(0,0);
+            $from = Carbon::now()->subDay(7)->setTime(0,0);
         }
 
         // NOW DIVIDE INTO EACH GAME TYPE

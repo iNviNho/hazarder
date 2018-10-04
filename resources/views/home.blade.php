@@ -16,8 +16,8 @@
                     </h1>
                     <div class="col-lg-3 col-md-6">
                         <ul class="list-group text-right dashboardul">
-                            <li class="list-group-item list-group-item-action @if ($name == null) active @endif"><a href="/home">TODAY</a></li>
-                            <li class="list-group-item list-group-item-action @if ($name == "week") active @endif"><a href="/home/week">THIS WEEK</a></li>
+                            <li class="list-group-item list-group-item-action @if ($name == "today") active @endif"><a href="/home/today">TODAY</a></li>
+                            <li class="list-group-item list-group-item-action @if ($name == null) active @endif"><a href="/home">THIS WEEK</a></li>
                             <li class="list-group-item list-group-item-action @if ($name == "month") active @endif"><a href="/home/month">THIS MONTH</a></li>
                             <li class="list-group-item list-group-item-action @if ($name == "year") active @endif"><a href="/home/year">THIS CURRENT YEAR</a></li>
                         </ul>
@@ -84,6 +84,7 @@
                                 <td>Lost rounds</td><td><strong>{{$marcingaleLostRounds}}</strong></td>
                             </tr>
                         </table>
+                        <a href="/dashboard/marcingale/detailed" class="btn btn-primary">MARCINGALE DETAILED</a>
                 </div>
 
             </div>
