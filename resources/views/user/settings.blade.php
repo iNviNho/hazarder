@@ -21,18 +21,20 @@
                             <div class="col-md-6">
                                 <input type="text" class="form-control" name="password" value="{{$settings->password}}" required autofocus>
                             </div>
-                        </div><div class="form-group row">
-                            <label for="email" class="col-sm-4 col-form-label text-md-right">Max one ten open bets</label>
-                            <div class="col-md-6">
-                                <input type="text" class="form-control" name="max_oneten" value="{{$settings->max_oneten}}" required autofocus>
-                            </div>
                         </div>
+                        {{--<div class="form-group row">--}}
+                            {{--<label for="email" class="col-sm-4 col-form-label text-md-right">Max one ten open bets</label>--}}
+                            {{--<div class="col-md-6">--}}
+                                {{--<input type="text" class="form-control" name="max_oneten" value="{{$settings->max_oneten}}" required autofocus>--}}
+                            {{--</div>--}}
+                        {{--</div>--}}
+                        {{--<div class="form-group row">--}}
+                            {{--<label for="email" class="col-sm-4 col-form-label text-md-right">Max one twenty open bets</label>--}}
+                            {{--<div class="col-md-6">--}}
+                                {{--<input type="text" class="form-control" name="max_onetwenty" value="{{$settings->max_onetwenty}}" required autofocus>--}}
+                            {{--</div>--}}
+                        {{--</div>--}}
                         <div class="form-group row">
-                            <label for="email" class="col-sm-4 col-form-label text-md-right">Max one twenty open bets</label>
-                            <div class="col-md-6">
-                                <input type="text" class="form-control" name="max_onetwenty" value="{{$settings->max_onetwenty}}" required autofocus>
-                            </div>
-                        </div><div class="form-group row">
                             <label for="email" class="col-sm-4 col-form-label text-md-right">Max marcingale open bets</label>
                             <div class="col-md-6">
                                 <input type="text" class="form-control" name="max_marcingale" value="{{$settings->max_marcingale}}" required autofocus>
@@ -51,13 +53,7 @@
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label for="email" class="col-sm-4 col-form-label text-md-right">Max one opposite open bets</label>
-                            <div class="col-md-6">
-                                <input type="text" class="form-control" name="max_opposite" value="{{$settings->max_opposite}}" required autofocus>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label for="email" class="col-sm-4 col-form-label text-md-right">Max bet amount</label>
+                            <label for="email" class="col-sm-4 col-form-label text-md-right">Bet amount</label>
                             <div class="col-md-6">
                                 <input type="text" class="form-control" name="bet_amount" value="{{$settings->bet_amount}}" required autofocus>
                             </div>

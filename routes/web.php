@@ -22,7 +22,7 @@ Route::get('/', "HomeController@checkLogin");
  */
 Route::group(["middleware" => ["auth", "authorized"]], function() {
 
-    Route::get('/home', 'HomeController@index')->name('home');
+    Route::get('/home/{name?}', 'HomeController@index')->name('home');
 
     Route::get('/dashboard/{name?}', 'DashboardController@index')->name('dashboard');
     Route::get('/dashboard/marcingale/detailed/{name?}', 'DashboardController@marcingale')->name('marcingaledetailed');

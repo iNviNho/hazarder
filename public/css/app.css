@@ -6,19 +6,16 @@
     color: #000!important;
 }
 
-.lenka-bg {
-    min-height: 100vh;
-    width: 100%;
-    background-size: cover;
-    background-position: center center
-}
-
 .clear {
     clear: both;
 }
 
 .navbar-laravel a {
     color: #FFF!important;
+}
+
+.lenka-bg {
+    position: relative;
 }
 
 .lenka-bg .card {
@@ -32,6 +29,7 @@
 .basic-content {
     padding: 20px;
     background: rgba(255,255,255,.9);
+    box-shadow: 0px 0px 8px 3px #828282;
 }
 
 .matchbettable td {
@@ -116,4 +114,28 @@
 
 .marcingale-detailed-tickets .alert-info {
     background-color: rgba(209,236,241, .3);
+}
+
+.app-background {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    min-height: 100vh;
+    background-size: cover;
+    background-position: center center;
+    z-index: -1;
+    filter: blur(2px);
+}
+
+.box-shadow {
+    box-shadow: 0px 0px 5px 3px #efefef;
+}
+
+
+@media (min-width: 1200px) {
+
+    .container-top {
+        max-width: 80%!important;
+    }
+
 }

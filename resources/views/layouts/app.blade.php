@@ -23,22 +23,24 @@
 
     <!-- Styles -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-    <link href="{{ assetn('css/app.css') }}?new" rel="stylesheet">
+    <link href="{{ assetn('css/app.css') }}?ver=2" rel="stylesheet">
 
     <link rel="icon" type="image/png" href="{{ assetn("images/h.png") }}">
 
 </head>
-<body class="lenka-bg"
-@guest
-    style="background-image: url({{ assetn("images/background.jpg") }});"
-@else
-    @if (is_null(Auth::user()->getSettings()->first()->bg_image))
-      style="background-image: url({{ assetn("images/background.jpg") }});"
+<body class="lenka-bg">
+
+    <div class="app-background"
+    @guest
+        style="background-image: url({{ assetn("images/background.jpg") }});"
     @else
-        style="background-image: url({{ assetn(Auth::user()->getSettings()->first()->bg_image) }});"
-    @endif
-@endguest
->
+        @if (is_null(Auth::user()->getSettings()->first()->bg_image))
+            style="background-image: url({{ assetn("images/background.jpg") }});"
+        @else
+            style="background-image: url({{ assetn(Auth::user()->getSettings()->first()->bg_image) }});"
+        @endif
+    @endguest></div>
+
     <div id="app">
         @if(session()->has('msg'))
             <div class="alert alert-info">
@@ -46,7 +48,7 @@
             </div>
         @endif
         <nav class="navbar navbar-expand-md navbar-laravel">
-            <div class="container">
+            <div class="container container-top" style="padding: 7px 0px;">
                 <a class="navbar-brand" href="{{ url('/') }}">
                     <strong>Hazarder</strong>
                 </a>
@@ -81,12 +83,13 @@
                                 </a>
 
                                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-                                    <a class="dropdown-item" href="/dashboard" > <strong>Dashboard</strong></a>
-                                    <a class="dropdown-item" href="/matches" > Matches</a>
+                                    <a class="dropdown-item" href="/dashboard/marcingale/detailed" > <strong>Marcingale</strong></a>
+                                    {{--<a class="dropdown-item" href="/matches" > Matches</a>--}}
                                     <a class="dropdown-item" href="/tickets" > Tickets</a>
                                     <a class="dropdown-item" href="/my-tickets" > My Tickets</a>
-                                    <a class="dropdown-item" href="/settings" > Settings</a>
+                                    <a class="dropdown-item" href="/dashboard" > All Statistics</a>
                                     <a class="dropdown-item" href="/my-logs" > My Logs</a>
+                                    <a class="dropdown-item" href="/settings" > Settings</a>
 
                                     <a class="dropdown-item" href="{{ route('logout') }}"
                                        onclick="event.preventDefault();
