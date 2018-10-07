@@ -51,6 +51,8 @@ class HomeController extends Controller
             $from = Carbon::now()->subDay(7)->setTime(0,0);
         }
 
+        $someYearsAgo = Carbon::now()->subYears(10);
+
         // NOW DIVIDE INTO EACH GAME TYPE
         $gameType = "marcingale";
         $betTickets = UserTicket::where("user_id", "=", $user->id)
@@ -155,7 +157,36 @@ class HomeController extends Controller
                 "status" => "bet"
             ])
             ->pluck("bet_amount");
+        $currentBetPossibleWin = UserTicket::selectRaw('sum(bet_possible_win) as bet_possible_win')
+            ->where([
+                "user_id" => $user->id,
+                "status" => "bet"
+            ])
+            ->pluck("bet_possible_win");
+        $currentBetPossibleClearWin = UserTicket::selectRaw('sum(bet_possible_clear_win) as bet_possible_win')
+            ->where([
+                "user_id" => $user->id,
+                "status" => "bet"
+            ])
+            ->pluck("bet_possible_clear_win");
 
+        // chart that will show money over time
+        $sumOfBetAmountsUntilFrom = UserTicket::where("user_id", "=", $user->id)
+            ->where("status", "=", "betanddone")
+            ->whereHas('Ticket', function($q) use($gameType) {
+                $q->where('game_type', "=", $gameType);
+            })
+            ->whereBetween("created_at", [$someYearsAgo, $from])
+            ->sum("bet_amount");
+        $sumOfWonAmountsUntilFrom = UserTicket::where("user_id", "=", $user->id)
+            ->where("status", "=", "betanddone")
+            ->whereHas('Ticket', function($q) use($gameType) {
+                $q->where('game_type', "=", $gameType);
+            })
+            ->where("bet_win", "=", "1")
+            ->whereBetween("created_at", [$someYearsAgo, $from])
+            ->sum("bet_possible_win");
+        $profitUntilFrom = bcsub($sumOfWonAmountsUntilFrom, $sumOfBetAmountsUntilFrom, 2);
 
         // chart that will show money over time
         $betTicketsForChartData = UserTicket::where("user_id", "=", $user->id)
@@ -167,7 +198,7 @@ class HomeController extends Controller
             ->orderBy("created_at", "asc")
             ->get();
         $betTicketsChartData = [];
-        $amount = "0.00";
+        $amount = $profitUntilFrom;
         foreach ($betTicketsForChartData as $id => $betTicketChart) {
 
             if ($betTicketChart->bet_win > 0) {
@@ -195,6 +226,8 @@ class HomeController extends Controller
 
         return view("home", [
             "currentBetAmount" => $currentBetAmount[0],
+            "currentBetPossibleWin" => $currentBetPossibleWin[0],
+            "currentBetPossibleClearWin" => $currentBetPossibleClearWin[0],
             "betTicketsChartData" => $betTicketsChartData,
             "marcingaleRoundsChartData" => $marcingaleRoundsChartData,
             "data" => $data,

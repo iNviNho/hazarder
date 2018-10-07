@@ -40,6 +40,19 @@
                                     <li class="list-group-item"><h3>{{$currentBetAmount}}€</h3></li>
                                 </ul>
                             </div>
+
+                            <div class="col-md-6" style="padding-top: 40px;">
+                                <ul class="list-group">
+                                    <li class="list-group-item active"><h3>Current Bet Possible Win</h3></li>
+                                    <li class="list-group-item"><h3>{{$currentBetPossibleWin}}€</h3></li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6" style="padding-top: 40px;">
+                                <ul class="list-group">
+                                    <li class="list-group-item active"><h3>Current Bet Possible Clear Win</h3></li>
+                                    <li class="list-group-item"><h3>{{$currentBetPossibleClearWin}}€</h3></li>
+                                </ul>
+                            </div>
                         </div>
 
                         <h3 style="padding-top: 15px;">Profit by the time</h3>
