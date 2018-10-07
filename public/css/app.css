@@ -124,7 +124,6 @@
     background-size: cover;
     background-position: center center;
     z-index: -1;
-    filter: blur(2px);
 }
 
 .box-shadow {
