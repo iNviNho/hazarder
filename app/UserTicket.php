@@ -221,7 +221,9 @@ class UserTicket extends Model
         }
 
         $url = $this->getLinkToBettingSite();
-
+        
+        event(new UserLogEvent("Starting to finalize: " . $this->id . " with this link to betting site: " . $url, $this->user->id, $this->id));
+        
         $ticketRequest = $user->getUserGuzzle()->get($url);
 
         $ticketHTML = HtmlDomParser::str_get_html($ticketRequest->getBody()->getContents());

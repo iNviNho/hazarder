@@ -128,7 +128,13 @@
                 mode: 'nearest',
                 intersect: true
             },
-            pointHoverBorderWidth: 0
+            elements: { 
+                point: { 
+                    radius: 0,
+                    hitRadius: 10, 
+                    hoverRadius: 5,
+                } 
+            } 
         }
     };
 
@@ -153,7 +159,13 @@
                 mode: 'nearest',
                 intersect: true
             },
-            pointHoverBorderWidth: 0
+            elements: { 
+                point: { 
+                    radius: 0,
+                    hitRadius: 10, 
+                    hoverRadius: 5,
+                } 
+            } 
         }
     };
 
