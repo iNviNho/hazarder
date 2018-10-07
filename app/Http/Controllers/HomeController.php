@@ -163,7 +163,7 @@ class HomeController extends Controller
                 "status" => "bet"
             ])
             ->pluck("bet_possible_win");
-        $currentBetPossibleClearWin = UserTicket::selectRaw('sum(bet_possible_clear_win) as bet_possible_win')
+        $currentBetPossibleClearWin = UserTicket::selectRaw('sum(bet_possible_clear_win) as bet_possible_clear_win')
             ->where([
                 "user_id" => $user->id,
                 "status" => "bet"
