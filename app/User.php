@@ -44,6 +44,8 @@ class User extends Authenticatable
 
         $allowedGameTypesToBet = [];
 
+        $credit = $this->credit;
+
         // default it
         foreach (Ticket::$GAME_TYPES as $GAME_TYPE) {
             $settingsValue = "max_" . $GAME_TYPE;
@@ -106,6 +108,12 @@ class User extends Authenticatable
                     $userTicket->bet_amount = $userSettings->bet_amount;
                 }
 
+                // does user still have credit
+                if (BC::comp($credit, $userTicket->bet_amount, 2) < 0) {
+                    event(new UserLogEvent("Unable to create marcingale bet. User credit " . $credit . " too low for bet " . $userTicket->bet_amount, $this->id));
+                    continue;
+                }
+
                 $userTicket->bet_rate = $ticket->matchbet->value;
                 if ( ($userTicket->bet_rate == "") || ($userTicket->bet_rate == " ")) {
                     // hotfix for bad bet_rates
@@ -128,6 +136,9 @@ class User extends Authenticatable
 
                 // -1 allowed bet for this game type
                 $allowedGameTypesToBet[$ticket->game_type] -= 1;
+
+                // lower credit
+                $credit = BC::sub($credit, $userTicket->bet_amount, 2);
 
                 event(new UserLogEvent("UserTicket for game type: " . $ticket->game_type . " with ID: " . $userTicket->id . " created.", $this->id, $userTicket->id));
             }
