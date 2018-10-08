@@ -84,7 +84,7 @@
 
                                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
                                     <a class="dropdown-item" href="/dashboard/marcingale/detailed" > <strong>Marcingale</strong></a>
-                                    {{--<a class="dropdown-item" href="/matches" > Matches</a>--}}
+                                    <a class="dropdown-item" href="/matches" > Matches</a>
                                     <a class="dropdown-item" href="/tickets" > Tickets</a>
                                     <a class="dropdown-item" href="/my-tickets" > My Tickets</a>
                                     <a class="dropdown-item" href="/dashboard" > All Statistics</a>

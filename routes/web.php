@@ -36,6 +36,7 @@ Route::group(["middleware" => ["auth", "authorized"]], function() {
     Route::get('/tickets/checkresult/{ticketID}', "TicketController@checkresult");
 
     Route::get("/match/{matchID}", "MatchesController@showMatch");
+    Route::post("/match/marcingale/continue", "MatchesController@continueMarcingaleRound");
     Route::get("/matches", "MatchesController@showMatches");
 
     Route::get('/user/update-credit', 'UserController@updateCredit');

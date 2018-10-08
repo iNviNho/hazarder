@@ -32,7 +32,9 @@ class TicketController extends Controller
 
     private function getTicketsGrid() {
 
-        $tickets = Ticket::query();
+        $tickets = Ticket::where([
+            "game_type" => "marcingale"
+        ]);
 
         $columns = [
             # simple results numbering, not related to table PK or any obtained data
