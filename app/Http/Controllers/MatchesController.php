@@ -226,6 +226,9 @@ class MatchesController extends Controller
         // lets bet
         $userTicket->bet();
 
+        $marcingaleTicketRound->status = "open";
+        $marcingaleTicketRound->save();
+
         return redirect("/my-tickets")->with("msg", "Match successfully bet");
     }
 
