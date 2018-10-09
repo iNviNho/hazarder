@@ -119,22 +119,30 @@
                 label: 'Profit by the time',
                 borderColor: "red",
                 data: @php echo json_encode(array_values($betTicketsChartData)) @endphp,
-                fill: false,
+                fillColor: "rgba(151,249,190,0.5)",
+                strokeColor: "rgba(255,255,255,1)",
+                pointColor: "rgba(220,220,220,1)",
+                pointStrokeColor: "#fff",
+                fill: true
             },]
         },
         options: {
             responsive: true,
-            hover: {
-                mode: 'nearest',
-                intersect: true
+            tooltips: {
+                mode: 'index',
+                intersect: false
             },
-            elements: { 
-                point: { 
+            hover: {
+                mode: 'index',
+                intersect: false
+            },
+            elements: {
+                point: {
                     radius: 0,
-                    hitRadius: 10, 
+                    hitRadius: 20,
                     hoverRadius: 5,
-                } 
-            } 
+                }
+            }
         }
     };
 
@@ -151,6 +159,8 @@
                 borderColor: "skyblue",
                 data: @php echo json_encode(array_values($marcingaleRoundsChartData)) @endphp,
                 fill: false,
+                backgroundColor: "grey",
+                borderWidth: "1"
             },]
         },
         options: {
@@ -165,7 +175,8 @@
                     hitRadius: 10, 
                     hoverRadius: 5,
                 } 
-            } 
+            },
+            steppedLine: true
         }
     };
 
