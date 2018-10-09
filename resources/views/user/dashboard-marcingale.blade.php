@@ -118,7 +118,12 @@
                                         <div class="col-md-1">Result</div>
                                     </div>
                                     @foreach ($round->getMarcingaleUserTickets()->get() as $marUserTicket)
-                                    @php $userTicket = $marUserTicket->userTicket()->first(); @endphp
+                                    @php
+                                        $userTicket = $marUserTicket->userTicket()->first();
+                                    @endphp
+                                        @if ($userTicket->status == "canceled")
+                                            @continue
+                                        @endif
                                     <div class="row
                                         @if ($userTicket->bet_win == 1) alert-success  @endif
                                         @if ($userTicket->bet_win == -1) alert-danger  @endif
