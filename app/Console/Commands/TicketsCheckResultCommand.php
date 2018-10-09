@@ -28,28 +28,27 @@ class TicketsCheckResultCommand extends Command
 
         foreach ($users as $user) {
 
-//            $userTickets = UserTicket::where("status", "=", "bet")
-//                ->where("user_id", "=", $user->id)
-//                ->whereHas("ticket", function($query) {
-//                    $query->whereHas("match", function($query) {
-//                        // check result only after 2 and half hours after game has started
-//                        $query->where("date_of_game", ">=", Carbon::now()->addMinutes(150)->format("Y-m-d H:i:s"));
-//                    });
-//                });
-                $userTickets = UserTicket::where("status", "=", "bet")
-                    ->where("user_id", "=", $user->id);
+            $userTickets = UserTicket::where("status", "=", "bet")
+                ->where("user_id", "=", $user->id);
 
             foreach ($userTickets->get() as $userTicket) {
-                $userTicket->tryToCheckResult($this);
 
-                sleep(rand(5, 15));
+                // check user tickets which match was played 2.5 hours ago
+                $nowTimestamp = Carbon::now()->getTimestamp();
+                $matchFinishTime = Carbon::createFromTimeString($userTicket->ticket->match->date_of_game)->addMinutes(150)->getTimestamp();
+
+                if ($nowTimestamp > $matchFinishTime) {
+                    $userTicket->tryToCheckResult($this);
+
+                    sleep(rand(5, 15));
+                }
+
             }
 
             $user->updateCredit();
         }
 
         $this->info("Check for check results was done.");
-
     }
 
 }
