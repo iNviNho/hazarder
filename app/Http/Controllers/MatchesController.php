@@ -156,7 +156,7 @@ class MatchesController extends Controller
                                 ->setTagName('button')
                                 ->setAttributes([
                                     'type' => 'submit',
-                                    'class' => 'btn btn-success btn-small'
+                                    'class' => 'btn btn-success btn-small float-right'
                                 ])
                                 ->addComponent(new RenderFunc(function() {
                                     return '<i class="glyphicon glyphicon-refresh"></i> Filter';

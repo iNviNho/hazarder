@@ -118,9 +118,9 @@
                                         <div class="col-md-1">Result</div>
                                     </div>
                                     @foreach ($round->getMarcingaleUserTickets()->get() as $marUserTicket)
-                                    @php
-                                        $userTicket = $marUserTicket->userTicket()->first();
-                                    @endphp
+                                        @php
+                                            $userTicket = $marUserTicket->userTicket()->first();
+                                        @endphp
                                         @if ($userTicket->status == "canceled")
                                             @continue
                                         @endif
