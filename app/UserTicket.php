@@ -254,7 +254,7 @@ class UserTicket extends Model
 
         $this->save();
 
-        if ($this->ticket->game_type == "marcingale") {
+        if (in_array($this->ticket->game_type, ["marcingale", "marcingale-custom"])) {
             MarcingaleUserTicket::treatBetAndDoneUserTicket($this);
         }
     }
@@ -266,7 +266,7 @@ class UserTicket extends Model
 
         $this->save();
 
-        if ($this->ticket->game_type == "marcingale") {
+        if (in_array($this->ticket->game_type, ["marcingale", "marcingale-custom"])) {
             MarcingaleUserTicket::treatBetAndDoneUserTicket($this);
         }
     }

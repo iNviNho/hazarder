@@ -135,7 +135,7 @@ class MarcingaleUserTicket extends Model
             $user = User::where("id", "=", $userTicket->user_id)->first();
             $maxMarcingaleLevel = trim($user->getSettings()->first()->max_marcingale_level);
 
-            if ($marcingaleUserRound->level_finished >= $maxMarcingaleLevel) {
+            if ($marcingaleUserRound->level_finished >= $maxMarcingaleLevel || $userTicket->ticket->game_type == "marcingale-custom") {
                 $marcingaleUserRound->status = "failed";
             } else {
                 $marcingaleUserRound->status = "open";
