@@ -22,7 +22,7 @@
 
     <!-- Styles -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-    <link href="{{ assetn('css/app.css') }}?ver=3" rel="stylesheet">
+    <link href="{{ assetn('css/app.css') }}?ver=5" rel="stylesheet">
 
     <link rel="icon" type="image/png" href="{{ assetn("images/h.png") }}">
 
