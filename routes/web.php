@@ -24,7 +24,7 @@ Route::group(["middleware" => ["auth", "authorized"]], function() {
 
     Route::get('/home/{name?}', 'HomeController@index')->name('home');
 
-    Route::get('/dashboard/{name?}', 'DashboardController@index')->name('dashboard');
+    Route::get('/dashboard', 'DashboardController@index')->name('dashboard');
     Route::get('/dashboard/marcingale/detailed/{name?}', 'DashboardController@marcingale')->name('marcingaledetailed');
 
     Route::get('/my-tickets', "TicketController@showMyTickets");

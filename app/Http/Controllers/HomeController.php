@@ -36,29 +36,32 @@ class HomeController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index($name = null)
+    public function index(Request $request)
     {
         $user = Auth::user();
 
-        $to = Carbon::now();
-        if ($name == "today") {
-            $from = Carbon::now()->setTime(0,0);
-        } elseif ($name == "month") {
-            $from = Carbon::now()->subMonth(1);
-        } elseif ($name == "year") {
-            $from = Carbon::now()->subYear(1);
-        } else {
-            $from = Carbon::now()->subDay(7)->setTime(0,0);
+        $from = $request->get("from");
+        $name = $request->get("name");
+
+        if (is_null($from)) {
+            $from = Carbon::now()->subDays(7)->setTime(0, 0)->getTimestamp();
         }
+        if (is_null($name)) {
+            $name = "last-7-days";
+        }
+
+        $to = Carbon::now();
+        $from = Carbon::createFromTimestamp($from);
+
 
         $someYearsAgo = Carbon::now()->subYears(10);
 
         // NOW DIVIDE INTO EACH GAME TYPE
-        $gameType = "marcingale";
+        $gameType = "%marcingale%";
         $betTickets = UserTicket::where("user_id", "=", $user->id)
             ->where("status", "=", "betanddone")
             ->whereHas('Ticket', function($q) use($gameType) {
-                $q->where('game_type', "=", $gameType);
+                $q->where('game_type', "LIKE", $gameType);
             })
             ->whereBetween("created_at", [$from, $to])
             ->count();
@@ -66,7 +69,7 @@ class HomeController extends Controller
         $wonTickets = UserTicket::where("user_id", "=", $user->id)
             ->where("status", "=", "betanddone")
             ->whereHas('Ticket', function($q) use($gameType) {
-                $q->where('game_type', "=", $gameType);
+                $q->where('game_type', "LIKE", $gameType);
             })
             ->where("bet_win", "=", "1")
             ->whereBetween("created_at", [$from, $to])
@@ -75,7 +78,7 @@ class HomeController extends Controller
         $lostTickets = UserTicket::where("user_id", "=", $user->id)
             ->where("status", "=", "betanddone")
             ->whereHas('Ticket', function($q) use($gameType) {
-                $q->where('game_type', "=", $gameType);
+                $q->where('game_type', "LIKE", $gameType);
             })
             ->where("bet_win", "=", "-1")
             ->whereBetween("created_at", [$from, $to])
@@ -94,14 +97,14 @@ class HomeController extends Controller
         $sumOfBetAmounts = UserTicket::where("user_id", "=", $user->id)
             ->where("status", "=", "betanddone")
             ->whereHas('Ticket', function($q) use($gameType) {
-                $q->where('game_type', "=", $gameType);
+                $q->where('game_type', "LIKE", $gameType);
             })
             ->whereBetween("created_at", [$from, $to])
             ->sum("bet_amount");
         $sumOfWonAmounts = UserTicket::where("user_id", "=", $user->id)
             ->where("status", "=", "betanddone")
             ->whereHas('Ticket', function($q) use($gameType) {
-                $q->where('game_type', "=", $gameType);
+                $q->where('game_type', "LIKE", $gameType);
             })
             ->where("bet_win", "=", "1")
             ->whereBetween("created_at", [$from, $to])
@@ -174,14 +177,14 @@ class HomeController extends Controller
         $sumOfBetAmountsUntilFrom = UserTicket::where("user_id", "=", $user->id)
             ->where("status", "=", "betanddone")
             ->whereHas('Ticket', function($q) use($gameType) {
-                $q->where('game_type', "=", $gameType);
+                $q->where('game_type', "LIKE", $gameType);
             })
             ->whereBetween("created_at", [$someYearsAgo, $from])
             ->sum("bet_amount");
         $sumOfWonAmountsUntilFrom = UserTicket::where("user_id", "=", $user->id)
             ->where("status", "=", "betanddone")
             ->whereHas('Ticket', function($q) use($gameType) {
-                $q->where('game_type', "=", $gameType);
+                $q->where('game_type', "LIKE", $gameType);
             })
             ->where("bet_win", "=", "1")
             ->whereBetween("created_at", [$someYearsAgo, $from])
@@ -192,7 +195,7 @@ class HomeController extends Controller
         $betTicketsForChartData = UserTicket::where("user_id", "=", $user->id)
             ->where("status", "=", "betanddone")
             ->whereHas('Ticket', function($q) use($gameType) {
-                $q->where('game_type', "=", $gameType);
+                $q->where('game_type', "LIKE", $gameType);
             })
             ->whereBetween("created_at", [$from, $to])
             ->orderBy("created_at", "asc")

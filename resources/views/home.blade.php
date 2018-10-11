@@ -8,99 +8,101 @@
     <div class="row justify-content-center">
         <div class="col-md-10">
 
-            <div class="basic-content">
-                <div class="row">
-                    <h1 class="col-lg-9 col-md-6">
-                        Welcome {{Auth::user()->name}}!
-                        <p style="font-size: 18px; padding-top: 10px;">Dashboard only for <strong>Marcingale</strong></p>
-                    </h1>
-                    <div class="col-lg-3 col-md-6">
-                        <ul class="list-group text-right dashboardul">
-                            <li class="list-group-item list-group-item-action @if ($name == "today") active @endif"><a href="/home/today">TODAY</a></li>
-                            <li class="list-group-item list-group-item-action @if ($name == null) active @endif"><a href="/home">THIS WEEK</a></li>
-                            <li class="list-group-item list-group-item-action @if ($name == "month") active @endif"><a href="/home/month">THIS MONTH</a></li>
-                            <li class="list-group-item list-group-item-action @if ($name == "year") active @endif"><a href="/home/year">THIS CURRENT YEAR</a></li>
+            <div class="basic-content" style="margin-bottom: 40px;">
+                <h3><span class="fas fa-smile-beam"></span> Welcome {{Auth::user()->name}}!</h3>
+                <div class="row" style="margin-top: 40px;">
+                    <div class="col-md-3">
+                        <ul class="list-group">
+                            <li class="list-group-item active"><h5>Credit</h5></li>
+                            <li class="list-group-item" style="font-size: 20px;">{{Auth::user()->credit}}€</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-3">
+                        <ul class="list-group">
+                            <li class="list-group-item active"><h5>Current bet amount</h5></li>
+                            <li class="list-group-item" style="font-size: 20px;">{{$currentBetAmount}}€</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-3">
+                        <ul class="list-group">
+                            <li class="list-group-item active"><h5>Current possible win</h5></li>
+                            <li class="list-group-item" style="font-size: 20px;">{{$currentBetPossibleWin}}€</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-3">
+                        <ul class="list-group">
+                            <li class="list-group-item active"><h5>Current possible clear win</h5></li>
+                            <li class="list-group-item" style="font-size: 20px;">{{$currentBetPossibleClearWin}}€</li>
                         </ul>
                     </div>
                 </div>
-
-                <div class="row">
-                    <div class="col-md-8">
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <ul class="list-group">
-                                    <li class="list-group-item active"><h3>Current Credit</h3></li>
-                                    <li class="list-group-item"><h3>{{Auth::user()->credit}}€</h3></li>
-                                </ul>
-                            </div>
-                            <div class="col-md-6">
-                                <ul class="list-group">
-                                    <li class="list-group-item active"><h3>Current Bet Amount</h3></li>
-                                    <li class="list-group-item"><h3>{{$currentBetAmount}}€</h3></li>
-                                </ul>
-                            </div>
-
-                            <div class="col-md-6" style="padding-top: 40px;">
-                                <ul class="list-group">
-                                    <li class="list-group-item active"><h3>Current Bet Possible Win</h3></li>
-                                    <li class="list-group-item"><h3>{{$currentBetPossibleWin}}€</h3></li>
-                                </ul>
-                            </div>
-                            <div class="col-md-6" style="padding-top: 40px;">
-                                <ul class="list-group">
-                                    <li class="list-group-item active"><h3>Current Bet Possible Clear Win</h3></li>
-                                    <li class="list-group-item"><h3>{{$currentBetPossibleClearWin}}€</h3></li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <h3 style="padding-top: 15px;">Profit by the time</h3>
-                        <canvas id="myChartA"></canvas>
-
-                        <h3 style="padding-top: 15px;">Marcingale round level finished by the time</h3>
-                        <canvas id="myChartB"></canvas>
-
-                    </div>
-
-                    <div class="col-md-4">
-                        <h3>Statistics:</h3>
-                        <table class="table table-hovered table-bordered table-striped">
-                            <tr>
-                                <td>Bet tickets</td><td><strong>{{$data["bet_tickets"]}}</strong></td>
-                            </tr>
-                            <tr>
-                                <td>Won tickets</td><td><strong>{{$data["won_tickets"]}}</strong></td>
-                            </tr>
-                            <tr>
-                                <td>Lost tickets</td><td><strong>{{$data["lost_tickets"]}}</strong></td>
-                            </tr>
-                            <tr>
-                                <td>Win ratio</td><td><strong>{{$data["ratio"]}}</strong></td>
-                            </tr>
-                            <tr>
-                                <td>Profit</td><td><strong>{{$data["profit"]}}</strong></td>
-                            </tr>
-                        </table>
-                        <h3>More:</h3>
-                        <table class="table table-hovered table-bordered table-striped">
-                            <tr>
-                                <td>All rounds</td><td><strong>{{$marcingaleRounds}}</strong></td>
-                            </tr>
-                            <tr>
-                                <td>Open rounds</td><td><strong>{{$marcingaleOpenRounds}}</strong></td>
-                            </tr>
-                            <tr>
-                                <td>Won rounds</td><td><strong>{{$marcingaleWonRounds}}</strong></td>
-                            </tr>
-                            <tr>
-                                <td>Lost rounds</td><td><strong>{{$marcingaleLostRounds}}</strong></td>
-                            </tr>
-                        </table>
-                        <a href="/dashboard/marcingale/detailed" class="btn btn-primary">MARCINGALE DETAILED</a>
-                </div>
-
             </div>
+
+            <br class="clear">
+
+            <div class="basic-content basic-content-left">
+                <h4>Filters</h4>
+                <ul class="basic-filters">
+                    <li class="@if ($name == "today") active @endif"><a href="/home?from={{\Carbon\Carbon::now()->setTime(0, 0)->getTimestamp()}}&name=today"><span class="fas fa-filter"></span> Today</a></li>
+                    <li class="@if ($name == "last-7-days") active @endif"><a href="/home?from={{\Carbon\Carbon::now()->subDays(7)->setTime(0, 0)->getTimestamp()}}&name=last-7-days"><span class="fas fa-filter"></span> Last 7 days</a></li>
+                    <li class="@if ($name == "last-30-days") active @endif"><a href="/home?from={{\Carbon\Carbon::now()->subDays(30)->setTime(0, 0)->getTimestamp()}}&name=last-30-days"><span class="fas fa-filter"></span> Last 30 days</a></li>
+                    <li class="@if ($name == "this-week") active @endif"><a href="/home?from={{\Carbon\Carbon::now()->startOfWeek()->setTime(0, 0)->getTimestamp()}}&name=this-week"><span class="fas fa-filter"></span> This week</a></li>
+                    <li class="@if ($name == "this-month") active @endif"><a href="/home?from={{\Carbon\Carbon::now()->startOfMonth()->setTime(0, 0)->getTimestamp()}}&name=this-month"><span class="fas fa-filter"></span> This month</a></li>
+                    <li class="@if ($name == "this-quartal") active @endif"><a href="/home?from={{\Carbon\Carbon::now()->startOfQuarter()->setTime(0, 0)->getTimestamp()}}&name=this-quartal"><span class="fas fa-filter"></span> This quartal</a></li>
+                    <li class="@if ($name == "this-year") active @endif"><a href="/home?from={{\Carbon\Carbon::now()->startOfYear()->setTime(0, 0)->getTimestamp()}}&name=this-year"><span class="fas fa-filter"></span> This year</a></li>
+                    <br class="clear">
+                </ul>
+            </div>
+
+
+            <div class="basic-content basic-content-right">
+                <h4>Tickets performance:</h4>
+                <table class="table table-hovered table-bordered table-striped">
+                    <tr>
+                        <td>Bet tickets</td><td><strong>{{$data["bet_tickets"]}}</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Won tickets</td><td><strong>{{$data["won_tickets"]}}</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Lost tickets</td><td><strong>{{$data["lost_tickets"]}}</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Win ratio</td><td><strong>{{$data["ratio"]}}</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Profit</td><td><strong>{{$data["profit"]}}</strong></td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="basic-content basic-content-left" style="margin-top: 40px;">
+                <h4 style="padding-top: 15px;">Portfolio performance</h4>
+                <p>Explore how your profit behaves over time. </p>
+                <canvas id="myChartA"></canvas>
+            </div>
+
+            <div class="basic-content basic-content-right" style="margin-top: 40px;">
+                <h4>Rounds performance:</h4>
+                <table class="table table-hovered table-bordered table-striped">
+                    <tr>
+                        <td>All rounds</td><td><strong>{{$marcingaleRounds}}</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Open rounds</td><td><strong>{{$marcingaleOpenRounds}}</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Won rounds</td><td><strong>{{$marcingaleWonRounds}}</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Lost rounds</td><td><strong>{{$marcingaleLostRounds}}</strong></td>
+                    </tr>
+                </table>
+                <a href="/dashboard/marcingale/detailed" class="btn btn-primary">Marcingale detailed</a>
+            </div>
+
+            <br class="clear">
+
         </div>
     </div>
 </div>
@@ -116,7 +118,7 @@
                 @endforeach
             ],
             datasets: [{
-                label: 'Profit by the time',
+                label: 'Portfolio performance',
                 borderColor: "red",
                 data: @php echo json_encode(array_values($betTicketsChartData)) @endphp,
                 fillColor: "rgba(151,249,190,0.5)",
@@ -184,8 +186,8 @@
         var ctxa = document.getElementById('myChartA').getContext('2d');
         window.myLine = new Chart(ctxa, configa);
 
-        var ctxb = document.getElementById('myChartB').getContext('2d');
-        window.myLine = new Chart(ctxb, configb);
+        // var ctxb = document.getElementById('myChartB').getContext('2d');
+        // window.myLine = new Chart(ctxb, configb);
     };
 
 </script>

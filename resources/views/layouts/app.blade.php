@@ -17,8 +17,7 @@
     <script src="{{ assetn('js/app.js') }}" defer></script>
 
     <!-- Fonts -->
-    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css?family=Raleway:300,400,600" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Work+Sans:200,400,500,600,700" rel="stylesheet">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
 
     <!-- Styles -->
@@ -30,16 +29,9 @@
 </head>
 <body class="lenka-bg">
 
-    <div class="app-background"
     @guest
-        style="background-image: url({{ assetn("images/background.jpg") }});"
-    @else
-        @if (is_null(Auth::user()->getSettings()->first()->bg_image))
-            style="background-image: url({{ assetn("images/background.jpg") }});"
-        @else
-            style="background-image: url({{ assetn(Auth::user()->getSettings()->first()->bg_image) }});"
-        @endif
-    @endguest></div>
+        <div class="app-background" style="background-image: url({{ assetn("images/background.jpg") }});"></div>
+    @endguest
 
     <div id="app">
         @if(session()->has('msg'))
@@ -48,7 +40,7 @@
             </div>
         @endif
         <nav class="navbar navbar-expand-md navbar-laravel">
-            <div class="container container-top" style="padding: 7px 0px;">
+            <div class="container container-top" style="padding: 4px 0px;">
                 <a class="navbar-brand" href="{{ url('/') }}">
                     <strong>Hazarder</strong>
                 </a>
@@ -68,26 +60,28 @@
                                 <a class="nav-link" href="{{ route('register') }}">{{ __('Register') }}</a>
                             </li>
                         @else
-                            <div style="color: white; font-weight: bold; font-size: 22px;">
-                                {{Auth::user()->credit}}€
-                                <a href="/user/update-credit" data-placement="bottom" data-toggle="tooltip"
-                                   title="Last updated: {{Auth::user()->getCreditUpdateTime()->format("d.m.Y H:i")}}"
-                                    style="padding-left: 10px;">
-                                    <span class="fa fa-sync" style="color: #56ddff; font-size: 18px;"></span>
-                                </a>
-                            </div>
+                            <li class="nav-item nav-item-credit" data-placement="bottom" data-toggle="tooltip"
+                                title="Last updated: {{Auth::user()->getCreditUpdateTime()->format("d.m.Y H:i")}}">{{Auth::user()->credit}}€</li>
+                            {{--<div>--}}
+                                {{--<a href="/user/update-credit" data-placement="bottom" data-toggle="tooltip"--}}
+                                   {{--title="Last updated: {{Auth::user()->getCreditUpdateTime()->format("d.m.Y H:i")}}"--}}
+                                    {{--style="padding-left: 10px;">--}}
+                                    {{--<span class="fa fa-sync" style="color: #56ddff; font-size: 18px;"></span>--}}
+                                {{--</a>--}}
+                            {{--</div>--}}
 
                             <li class="nav-item dropdown">
-                                <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
-                                    {{ Auth::user()->name }} <span class="caret"></span>
+                                <a style="font-size: 18px;" id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown">
+                                    <strong>{{ Auth::user()->name}}</strong> <span class="caret"></span>
                                 </a>
 
                                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-                                    <a class="dropdown-item" href="/dashboard/marcingale/detailed" > <strong>Marcingale</strong></a>
-                                    <a class="dropdown-item" href="/matches" > Matches</a>
-                                    <a class="dropdown-item" href="/tickets" > Tickets</a>
+                                    <a class="dropdown-item" href="/dashboard/marcingale/detailed" > <strong>Marcingale stats</strong></a>
                                     <a class="dropdown-item" href="/my-tickets" > My Tickets</a>
-                                    <a class="dropdown-item" href="/dashboard" > All Statistics</a>
+
+                                    <a class="dropdown-item" href="/matches" > Matches</a>
+                                    {{--<a class="dropdown-item" href="/tickets" > Tickets</a>--}}
+                                    {{--<a class="dropdown-item" href="/dashboard" > All Statistics</a>--}}
                                     <a class="dropdown-item" href="/my-logs" > My Logs</a>
                                     <a class="dropdown-item" href="/settings" > Settings</a>
 

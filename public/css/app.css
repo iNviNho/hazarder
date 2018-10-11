@@ -1,9 +1,40 @@
+html {
+    min-height: 100%;
+    background-color: #557582;
+}
+
+body {
+    height: 100%;
+    background-color: transparent;
+    font-size: 14px!important;
+}
+
+html, body {
+    margin: 0px;
+    padding: 0px;
+    font-family: Work Sans,Helvetica Neue,Helvetica,Arial,sans-serif!important;
+    width: 100%;
+}
+
+h1 {
+    font-weight: 700;
+}
+
+
 .navbar-laravel {
-    background-color: rgba(0,0, 0, .6);
+    background-color: #FFF;
+    box-shadow: 0px 0px 9px 0px #d2d2d2;
 }
 
 .navbar-laravel .dropdown-menu a {
-    color: #000!important;
+    color: #424242!important;
+}
+
+.nav-item-credit {
+    vertical-align: middle;
+    font-size: 25px;
+    padding-right: 20px;
+    font-weight: bold;
 }
 
 .clear {
@@ -11,26 +42,98 @@
 }
 
 .navbar-laravel a {
-    color: #FFF!important;
+    color: #424242!important;
 }
 
-.lenka-bg {
-    position: relative;
+.card {
+    box-shadow: 0 0 20px 0 rgba(0,0,0,.08);
 }
 
 .lenka-bg .card {
-    background-color: rgba(255,255,255,.9);
+    background-color: #FFF;
+}
+
+.container-center-center {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
 }
 
 .my-container {
-    max-width: 90%!important;;
+    max-width: 90%!important;
+    margin-top: 25px;
 }
 
 .basic-content {
     padding: 20px;
-    background: rgba(255,255,255,.9);
-    box-shadow: 0px 0px 8px 3px #828282;
+    background: #FFF;
+    box-shadow: 0 0 20px 0 rgba(0,0,0,.08);
 }
+
+.basic-content-left {
+    float: left;
+    width: calc(68% - 40px);
+}
+
+.basic-content-right {
+    float: right;
+    width: 32%;
+}
+
+
+
+.list-group-item {
+    padding: 5px 10px;
+}
+
+.list-group-item h5 {
+    margin: 0px;
+}
+
+.list-group-item.active {
+    background-color: #28334c;
+    border-color: #28334c;
+}
+
+h5 {
+    font-weight: 400;
+}
+
+.btn-primary {
+    background-color: #18242f;
+    border-color: #18242f;
+}
+
+.basic-filters {
+    list-style: none;
+    margin: 0px;
+    padding: 0px;
+}
+
+.basic-filters li {
+    float: left;
+    margin: 0px;
+    padding: 0px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
+.basic-filters li a {
+    padding: 4px 10px;
+    color: #000;
+    text-decoration: none;
+    border-radius: 3px;
+}
+
+.basic-filters li a:hover, .basic-filters li.active a {
+    background: #000;
+    color: #FFF;
+}
+
+
+
+
 
 .matchbettable td {
     padding: 5px;
@@ -123,7 +226,12 @@
     min-height: 100vh;
     background-size: cover;
     background-position: center center;
+    /*background-color: #d7eefc;*/
     z-index: -1;
+}
+
+#app {
+    padding-bottom: 40px;
 }
 
 .box-shadow {
@@ -134,7 +242,7 @@
 @media (min-width: 1200px) {
 
     .container-top {
-        max-width: 80%!important;
+        max-width: 60%!important;
     }
 
 }
