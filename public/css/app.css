@@ -246,3 +246,15 @@ h5 {
     }
 
 }
+
+@media (max-width: 1200px) {
+
+    .basic-content {
+        width: 100%!important;
+    }
+
+    .basic-content-filters {
+        margin-bottom: 40px;
+    }
+
+}

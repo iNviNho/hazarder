@@ -6,7 +6,7 @@
 
 <div class="container my-container">
     <div class="row justify-content-center">
-        <div class="col-md-10">
+        <div class="col-md-10 col-sm-12 col-xs-12">
 
             <div class="basic-content" style="margin-bottom: 40px;">
                 <h3><span class="fas fa-smile-beam"></span> Welcome {{Auth::user()->name}}!</h3>
@@ -40,7 +40,7 @@
 
             <br class="clear">
 
-            <div class="basic-content basic-content-left">
+            <div class="basic-content basic-content-filters basic-content-left">
                 <h4>Filters</h4>
                 <ul class="basic-filters">
                     <li class="@if ($name == "today") active @endif"><a href="/home?from={{\Carbon\Carbon::now()->setTime(0, 0)->getTimestamp()}}&name=today"><span class="fas fa-filter"></span> Today</a></li>
