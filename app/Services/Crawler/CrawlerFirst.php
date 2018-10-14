@@ -18,13 +18,11 @@ use GuzzleHttp\Client;
 use Illuminate\Console\Command;
 use Sunra\PhpSimple\HtmlDomParser;
 
-class Crawler
+class CrawlerFirst implements Crawlable
 {
 
     private $crawlCommand;
     private $guzzleClient;
-
-    private $rawURLs = [];
 
     /**
      * Crawler constructor.
@@ -43,22 +41,18 @@ class Crawler
     /**
      * Lets start crawling and return
      */
-    public function crawlAndInsert() {
+    public function crawl() {
 
         $this->crawlCommand->info("Crawling started ...");
 
-        // for 1 betting site
-//        $this->prepareURLS();
-//        $this->parseAllTodayMatches();
-
-        // for 2 betting site
-        $this->parseAllTodayMatches2();
+        // crawl
+        $this->parseAndPersistMatches();
     }
 
     /**
      * Prepare every URL that will be parsed
      */
-    private function prepareURLS() {
+    private function getURLs() {
 
         $this->crawlCommand->info("Starting preparing URLs");
 
@@ -69,26 +63,30 @@ class Crawler
 
         $contentDivs = $html->find("div[class=content scrollable-area]", 0)->children();
 
+        $urls = [];
         foreach ($contentDivs as $contentDiv) {
 
             $href = $contentDiv->find("a[class=header]", 0)->getAttribute("href");
 
             $groupURL = env("BASE_URL") . "/ajax" . $href . "&_ts=" . $now;
-            $this->rawURLs[] = $groupURL;
+            $urls[] = $groupURL;
 
             $this->crawlCommand->info("Added " . $groupURL . " to rawUrls");
         }
 
         $this->crawlCommand->info("Prepare URLs done");
+
+        return $urls;
     }
 
     /**
-     * Foreach prased URL get all matches and try to construct Match
+     * Foreach parsed URL get all matches and try to construct Match
      * and insert into DB
      */
-    private function parseAllTodayMatches() {
+    public function parseAndPersistMatches() {
 
-        foreach ($this->rawURLs as $groupURL) {
+
+        foreach ($this->getURLs() as $groupURL) {
             $result = $this->guzzleClient->get($groupURL);
 
             preg_match("/stavkovanie\/(.*?)\?filter/", $groupURL, $sport);
@@ -195,6 +193,10 @@ class Crawler
 
                     $matchBetsCount = $match->getMatchBets()->count();
 
+                    if ($matchBetsCount == 6) {
+                        dd($match);
+                    }
+
                     if ($matchBetsCount == 5) {
                         $match->type = "normal";
                     }
@@ -228,9 +230,15 @@ class Crawler
         $this->crawlCommand->info("Parse all games DONE");
     }
 
-    private function updateMatch($match, $game) {
 
-        $bets = $game->find(".market", 0)->children();
+    /**
+     * Update match with given data
+     * @param $match
+     * @param $data
+     */
+    public function updateMatch($match, $data) {
+
+        $bets = $data->find(".market", 0)->children();
 
         // we skip weird game type and single, it will be skipped anyway
         if (count($bets) == 1 || count($bets) == 4) {
@@ -264,137 +272,10 @@ class Crawler
             $this->crawlCommand->info("Updated matchbets for already existing match " . $match->unique_id);
 
         } else {
-            $this->crawlCommand->info("NOT Updated match because our match has " . $ourMatch->getMatchBets()->count() . " bets 
+            $this->crawlCommand->info("NOT Updated match because our match has " . $ourMatch->getMatchBets()->count() . " bets
                 and crawler gave us " . count($bets) . " for already existing match " . $match->unique_id);
         }
 
-    }
-
-    private function parseAllTodayMatches2() {
-
-//        dump((int)$content->maxBoxOrder);
-//        dd(count($content->bets));
-        $isFirst = true;
-        $order = 0;
-        $now = Carbon::now();
-        dd($now->format("Y-m-d"));
-        while (true) {
-
-
-            $url = env("SECOND_BETTING_PROVIDER_CRAWL_URL") . $now->format("Y-m-d");
-
-            if (!$isFirst) {
-                $url .= "&order=".$order;
-            } else {
-                // every other bet will not be first
-                $isFirst = false;
-            }
-
-            dump($url);
-            $result = $this->guzzleClient->get($url);
-            $content = json_decode($result->getBody()->getContents());
-
-            // if we don't have any new bets, lets end it
-            if (count($content->bets) < 1) {
-                break;
-            }
-
-            $order = $content->maxBoxOrder;
-
-            // otherwise process it
-            $this->processMatches2($content);
-
-            // dont continue propelorpepe
-            die();
-        }
-
-        die();
-
-    }
-
-    private function processMatches2($content) {
-
-        // prepare boxes
-        $boxes = [];
-        foreach ($content->boxes as $box) {
-            $boxes[$box->boxId] = $box;
-        }
-
-        foreach ($content->bets as $bet) {
-
-            $now = Carbon::now();
-            $betBox = $boxes[$bet->boxIds[0]];
-
-            $match = new Match();
-
-            $match->category = $betBox->name;
-
-            $match->name = $bet->participantOrder;
-            $match->unique_id = $bet->betId;
-            $match->number = $bet->betNumber;
-
-            // does this match already exists
-            if (MatchService::alreadyExists($match->unique_id)) {
-                // dont parse again, please just update rates of matchbets
-                $this->updateMatchForSecond($match, $bet);
-                continue;
-            }
-
-            if (count($bet->participants) == 2) {
-                $match->teama = $bet->participants[0];
-                $match->teamb = $bet->participants[1];
-            } else {
-                dd($bet);
-            }
-            $match->date_of_game = Carbon::createFromTimeString($bet->expirationTime)->addHours(2);
-            $match->unique_name = $bet->participantOrder . $bet->betId;
-            $match->sport = mb_strtolower($betBox->subtitle);
-
-            $match->save();
-
-            // lets setup matchbets
-            foreach ($bet->selections as $selection) {
-
-                $matchBet = new MatchBet();
-                $matchBet->name = $selection->name;
-                $matchBet->value = $selection->odds;
-
-                $matchBet->datainfo = $selection->tip;
-
-                $match->getMatchBets()->save($matchBet);
-            }
-
-            $matchBetsCount = count($bet->selections);
-            if ($matchBetsCount == 6) {
-                $match->type = "normal";
-            }
-            if ($matchBetsCount == 3) {
-                $match->type = "simple";
-            }
-            if ($matchBetsCount == 2) {
-                $match->type = "goldengame";
-            }
-            if ($match->type == null) {
-                dd($content);
-            }
-
-            $match->created_at = $now;
-            $match->updated_at = $now;
-            $match->betting_provider = 2;
-
-            $match->save();
-
-        }
-
-
-    }
-
-    /**
-     * @return array
-     */
-    public function getRawMatches()
-    {
-        return $this->rawMatches;
     }
 
 }
