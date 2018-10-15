@@ -31,9 +31,9 @@ class UserTicket extends Model
         $externalTicketId = $this->external_ticket_id;
 
         // some weird pattern replace
-        $externalTicketId = str_replace("_", "%2F", $externalTicketId);
+        //$externalTicketId = str_replace("_", "%2F", $externalTicketId);
 
-        $link = env("BASE_TICKET_SHOW") . $externalTicketId . "&kind=MAIN";
+        $link = env("BASE_TICKET_SHOW") . $externalTicketId . "kind=MAIN";
 
         return $link;
     }
