@@ -1,15 +1,13 @@
-*/15 * * * *    /usr/local/bin/php /var/www/html/artisan tickets:clear       >> /var/www/html/storage/logs/tickets_clear.log 2>&1 
+*/5 * * * *    /usr/local/bin/php /var/www/html/artisan tickets:clear       >> /var/www/html/storage/logs/tickets_clear.log 2>&1 
 
-0 */3 * * *     /usr/local/bin/php /var/www/html/artisan tickets:checkresult >> /var/www/html/storage/logs/tickets_checkresult.log 2>&1
+0 8-17,22 * * *     /usr/local/bin/php /var/www/html/artisan tickets:checkresult >> /var/www/html/storage/logs/tickets_checkresult.log 2>&1
 
-0 */3 * * *     /usr/local/bin/php /var/www/html/artisan crawl               >> /var/www/html/storage/logs/crawl.log 2>&1
+0 8-17,22 * * *     /usr/local/bin/php /var/www/html/artisan crawl               >> /var/www/html/storage/logs/crawl.log 2>&1
 
-5 */3 * * *    /usr/local/bin/php /var/www/html/artisan tickets:prepare     >> /var/www/html/storage/logs/tickets_prepare.log 2>&1
+5 8-17,22 * * *    /usr/local/bin/php /var/www/html/artisan tickets:prepare     >> /var/www/html/storage/logs/tickets_prepare.log 2>&1
 
-6 */3 * * *    /usr/local/bin/php /var/www/html/artisan tickets:approve     >> /var/www/html/storage/logs/tickets_approve.log 2>&1
+6 8-17,22 * * *    /usr/local/bin/php /var/www/html/artisan tickets:approve     >> /var/www/html/storage/logs/tickets_approve.log 2>&1
 
-10 */3 * * *    /usr/local/bin/php /var/www/html/artisan tickets:bet         >> /var/www/html/storage/logs/tickets_bet.log 2>&1
+10 8-17,22 * * *    /usr/local/bin/php /var/www/html/artisan tickets:bet         >> /var/www/html/storage/logs/tickets_bet.log 2>&1
 
-55 */3 * * *     /usr/local/bin/php /var/www/html/artisan tickets:finalize >> /var/www/html/storage/logs/tickets_finalize.log 2>&1
-
-* * * * *       date                                                         >> /var/www/html/storage/logs/tick-tack.log 2>&1
+55 8-17,22 * * *     /usr/local/bin/php /var/www/html/artisan tickets:finalize >> /var/www/html/storage/logs/tickets_finalize.log 2>&1
