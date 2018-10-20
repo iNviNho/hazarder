@@ -57,7 +57,7 @@ class Ticket extends Model
 
             // type of marcingale
             // if $rate >= 1.9 && $rate <= 2.11
-            if (bccomp($rate, "1.89", 2) == 1 && bccomp($rate, "2.11", 2) == -1) {
+            if (bccomp($rate, "1.89", 2) == 1 && bccomp($rate, "2.05", 2) == -1) {
                 $game_type = "marcingale";
             }
 
