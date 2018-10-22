@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Settings;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -10,7 +11,7 @@ class UserController extends Controller
 
     public function showSettings() {
 
-        $settings = Auth::user()->getSettings()->first();
+        $settings = Auth::user()->getSettings();
         return view("user.settings", [
             "settings" => $settings
         ]);
@@ -18,38 +19,21 @@ class UserController extends Controller
 
     public function updateSettings(Request $request) {
 
-        $settings = Auth::user()->getSettings()->first();
-        $user = Auth::user();
+        $data = $request->except("_token");
 
-        $values = $request->all();
+        foreach ($data as $key => $value) {
 
-        // lets validate bet_amount
-        if (bccomp($values["bet_amount"], "0.5", 2) < 0) {
-            $values["bet_amount"] = "0.5";
+            $del = explode("-", $key);
+            $column = $del[0];
+            $id = $del[1];
+
+            $setting = Settings::find($id);
+            $setting->$column = $value;
+            $setting->save();
         }
-
-        // lets check if photo was uploaded
-        $file = $request->file('bg_image');
-        if ($request->hasFile("bg_image") && $file->isValid()) {
-            // lets set it
-            $values["bg_image"] = "images/user-images/" . $user->id . ".". $file->getClientOriginalExtension();
-            $file->move("images/user-images", $user->id . ".". $file->getClientOriginalExtension());
-        } else {
-            $values["bg_image"] = $settings->bg_image;
-        }
-
-        if (array_key_exists("marcingale_finish", $values) && $values["marcingale_finish"] == "on") {
-            $values["marcingale_finish"] = 1;
-        } else {
-            $values["marcingale_finish"] = 0;
-        }
-
-        $settings->update($values);
 
         $request->session()->flash('msg', 'Settings successfully update!');
-        return view("user.settings", [
-            "settings" => $settings
-        ]);
+        return redirect("/settings");
     }
 
     public function updateCredit(Request $request) {

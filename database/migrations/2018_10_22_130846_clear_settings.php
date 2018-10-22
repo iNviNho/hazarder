@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateBettingProvidersTable extends Migration
+class ClearSettings extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,11 @@ class CreateBettingProvidersTable extends Migration
      */
     public function up()
     {
-        Schema::create('betting_providers', function (Blueprint $table) {
-            $table->increments('id');
-            $table->string("name", 100);
-            $table->smallInteger("active")->default(0);
-            $table->timestamps();
+        Schema::table('settings', function (Blueprint $table) {
+            $table->dropColumn("max_oneten");
+            $table->dropColumn("max_onetwenty");
+            $table->dropColumn("max_opposite");
+            $table->dropColumn("bg_image");
         });
     }
 
@@ -28,6 +28,6 @@ class CreateBettingProvidersTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('betting_providers');
+        //
     }
 }

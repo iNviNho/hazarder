@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateBettingProvidersTable extends Migration
+class SettingsForMoreUsers extends Migration
 {
     /**
      * Run the migrations.
@@ -13,12 +13,13 @@ class CreateBettingProvidersTable extends Migration
      */
     public function up()
     {
-        Schema::create('betting_providers', function (Blueprint $table) {
-            $table->increments('id');
-            $table->string("name", 100);
+        Schema::disableForeignKeyConstraints();
+        Schema::table('settings', function (Blueprint $table) {
             $table->smallInteger("active")->default(0);
-            $table->timestamps();
+            $table->unsignedInteger("betting_provider_id");
+            $table->foreign('betting_provider_id')->references('id')->on('betting_providers');
         });
+        Schema::enableForeignKeyConstraints();
     }
 
     /**
@@ -28,6 +29,5 @@ class CreateBettingProvidersTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('betting_providers');
     }
 }
