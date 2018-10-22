@@ -26,8 +26,8 @@ class MarcingaleUserTicket extends Model
     }
 
     /**
-     * This function just returns true if new marcingale ticket round should started
-     * Or returns marcingale ticket round that should follow
+     * This function just returns true if new marcingale ticket round should start
+     * Or returns marcingale ticket round that should be continued
      * @param $user
      * @return boolean
      * @return MarcingaleUserRound
@@ -87,7 +87,7 @@ class MarcingaleUserTicket extends Model
         return $marcingaleUserTicket;
     }
 
-    public static function createContinuousMarcingaleUserTicketRound($user, MarcingaleUserRound $marcingaleTicketRound) {
+    public static function createContinuousMarcingaleUserTicket($user, MarcingaleUserRound $marcingaleTicketRound) {
 
         $doneLevels = 0;
         foreach ($marcingaleTicketRound->getMarcingaleUserTickets()->get() as $marTicket) {

@@ -11,7 +11,7 @@ class UserController extends Controller
 
     public function showSettings() {
 
-        $settings = Auth::user()->getSettings();
+        $settings = Settings::where("user_id", Auth::user()->id);
         return view("user.settings", [
             "settings" => $settings
         ]);

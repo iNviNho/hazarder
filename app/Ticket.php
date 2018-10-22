@@ -76,7 +76,7 @@ class Ticket extends Model
      * @param $matchBet
      * @return bool
      */
-    private static function isMatchBetFavoritInThisMatch($match, $matchBet) {
+    public static function isMatchBetFavoritInThisMatch($match, $matchBet) {
 
         // for golden game, we simply have to be favorit
         if ($match->type == "goldengame") {
