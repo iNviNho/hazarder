@@ -14,14 +14,6 @@ class User extends Authenticatable
     use Notifiable;
 
     /**
-     * Get the comments for the blog post.
-     */
-    public function getSettings()
-    {
-        return $this->hasMany('App\Settings');
-    }
-
-    /**
      * The attributes that are mass assignable.
      *
      * @var array
@@ -38,9 +30,19 @@ class User extends Authenticatable
         'password', 'remember_token',
     ];
 
-    public function approveTickets($tickets) {
+    /**
+     * Approve given tickets for given bettingProviderID
+     * @param $tickets
+     * @param $bettingProviderID
+     */
+    public function approveTickets($tickets, $bettingProviderID) {
 
-        $userSettings = $this->getSettings()->first();
+        $userSettings = Settings::where([
+            "user_id" => $this->id,
+            "betting_provider_id" => $bettingProviderID
+        ])->first();
+
+        dd($userSettings);
 
         $allowedGameTypesToBet = [];
 
@@ -67,6 +69,11 @@ class User extends Authenticatable
         }
 
         foreach ($tickets->get() as $ticket) {
+
+            // safety check to approve only the ones we intend to
+            if ($ticket->match()->betting_provider_id != $bettingProviderID) {
+                continue;
+            }
 
             // can we approve this ticket for this game type?
             if ($allowedGameTypesToBet[$ticket->game_type] > 0) {
@@ -172,26 +179,34 @@ class User extends Authenticatable
         event(new UserLogEvent("Users credit with ID: " . $this->id . " was successfully updated to: " . $this->credit, $this->id));
     }
 
-    public function getCreditUpdateTime() {
-        return Carbon::createFromTimeString($this->credit_update_time);
+    public function getSettings($bettingProviderID) {
+        return Settings::where([
+            "user_id" => $this->id,
+            "betting_provider_id" => $bettingProviderID
+        ])->first();
     }
 
-    public function getHeader() {
+    public function getCreditUpdateTime($bettingProviderID) {
 
-        $settings = $this->getSettings()->first();
-        // if header is null, append one
-        if (is_null($settings->header)) {
-            $countHeaders = count(AppSettings::getUserHeaders());
-            $random = rand(1, $countHeaders);
-            $newHeader = AppSettings::getUserHeaders()[$random];
-            $settings->header = $newHeader;
+        return Carbon::createFromTimeString($this->getSettings($bettingProviderID)->credit_update_time);
+    }
 
-            //save new header
-            $settings->save();
-        }
+    public function getHeader($bettingProviderID) {
+
+        $settings = Settings::where([
+            "user_id" => $this->id,
+            "betting_provider_id" => $bettingProviderID
+        ])->first();
 
         // get header
-        return ["User-Agent" => $this->getSettings()->first()->header];
+        return ["User-Agent" => $settings->header];
+    }
+
+    public function getCredit() {
+
+        $credit = Settings::where(["user_id" => $this->id])->selectRaw("sum(credit) as credit")->pluck("credit")->first();
+
+        return $credit;
     }
 
 }

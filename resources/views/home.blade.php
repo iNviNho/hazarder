@@ -14,7 +14,7 @@
                     <div class="col-md-3">
                         <ul class="list-group">
                             <li class="list-group-item active"><h5>Credit</h5></li>
-                            <li class="list-group-item" style="font-size: 20px;">{{Auth::user()->credit}}€</li>
+                            <li class="list-group-item" style="font-size: 20px;">{{Auth::user()->getCredit()}}€</li>
                         </ul>
                     </div>
                     <div class="col-md-3">
