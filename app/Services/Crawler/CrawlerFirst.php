@@ -186,7 +186,7 @@ class CrawlerFirst implements Crawlable
                     $match->unique_name = preg_replace("/\s/", "_", $match->unique_name);
 
                     // first betting provider
-                    $match->betting_provider = BettingProvider::FIRST_PROVIDER_F;
+                    $match->betting_provider_id = BettingProvider::FIRST_PROVIDER_F;
 
                     $match->save();
 

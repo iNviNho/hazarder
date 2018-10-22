@@ -120,7 +120,7 @@ class CrawlerSecond implements Crawlable
             // lets create a match
             $match = new Match();
 
-            $match->betting_provider = BettingProvider::SECOND_PROVIDER_N;
+            $match->betting_provider_id = BettingProvider::SECOND_PROVIDER_N;
 
             $match->category = $betBox->name;
 
