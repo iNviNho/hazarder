@@ -9,6 +9,7 @@
 namespace App\Services\Crawler;
 
 
+use App\BettingProvider;
 use App\Match;
 use App\MatchBet;
 use App\Services\AppSettings;
@@ -46,7 +47,18 @@ class CrawlerFirst implements Crawlable
         $this->crawlCommand->info("Crawling started ...");
 
         // crawl
-        $this->parseAndPersistMatches();
+        if ($this->isEnabled()) {
+            $this->parseAndPersistMatches();
+        }
+    }
+
+    /**
+     * Is this provider enabled?
+     * @return bool
+     */
+    public function isEnabled()
+    {
+        return BettingProvider::isEnabled(BettingProvider::FIRST_PROVIDER_F);
     }
 
     /**
@@ -116,7 +128,7 @@ class CrawlerFirst implements Crawlable
 
                     // do we have this unique_id already in DB?
                     if (MatchService::alreadyExists($match->unique_id)) {
-                        // dont parse again, please just update rates of matchbets
+                        // don't parse again, please just update rates of match bets
                         $this->updateMatch($match, $game);
                         continue;
                     }
@@ -174,7 +186,7 @@ class CrawlerFirst implements Crawlable
                     $match->unique_name = preg_replace("/\s/", "_", $match->unique_name);
 
                     // first betting provider
-                    $match->betting_provider = 1;
+                    $match->betting_provider = BettingProvider::FIRST_PROVIDER_F;
 
                     $match->save();
 
@@ -192,10 +204,6 @@ class CrawlerFirst implements Crawlable
                     }
 
                     $matchBetsCount = $match->getMatchBets()->count();
-
-                    if ($matchBetsCount == 6) {
-                        dd($match);
-                    }
 
                     if ($matchBetsCount == 5) {
                         $match->type = "normal";

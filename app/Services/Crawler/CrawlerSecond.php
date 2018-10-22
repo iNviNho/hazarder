@@ -8,6 +8,7 @@
 
 namespace App\Services\Crawler;
 
+use App\BettingProvider;
 use App\Match;
 use App\MatchBet;
 use App\Services\AppSettings;
@@ -45,7 +46,18 @@ class CrawlerSecond implements Crawlable
         $this->crawlCommand->info("Crawling started ...");
 
         // crawl
-        $this->parseAndPersistMatches();
+        if ($this->isEnabled()) {
+            $this->parseAndPersistMatches();
+        }
+    }
+
+    /**
+     * Is this provider enabled?
+     * @return bool
+     */
+    public function isEnabled()
+    {
+        return BettingProvider::isEnabled(BettingProvider::SECOND_PROVIDER_N);
     }
 
     public function parseAndPersistMatches() {
@@ -108,6 +120,8 @@ class CrawlerSecond implements Crawlable
             // lets create a match
             $match = new Match();
 
+            $match->betting_provider = BettingProvider::SECOND_PROVIDER_N;
+
             $match->category = $betBox->name;
 
             $match->name = $bet->participantOrder;
@@ -132,8 +146,9 @@ class CrawlerSecond implements Crawlable
             if ($matchBetsCount == 2) {
                 $match->type = "goldengame";
             }
+
+            // for not supported match type, just skip
             if ($match->type == null) {
-                dump("Match type unknown " . $match->name . " header ". $bet->header);
                 continue;
             }
 
@@ -148,7 +163,7 @@ class CrawlerSecond implements Crawlable
                 $match->teama = $bet->participants[0];
                 $match->teamb = $bet->participants[1];
             } else {
-                dump("More participants " . $match->name);
+                // more participants than we support, skip
                 continue;
             }
             $match->date_of_game = Carbon::createFromTimeString($bet->expirationTime)->addHours(2);
@@ -176,7 +191,6 @@ class CrawlerSecond implements Crawlable
 
             $match->created_at = $now;
             $match->updated_at = $now;
-            $match->betting_provider = 2;
 
             $match->save();
 

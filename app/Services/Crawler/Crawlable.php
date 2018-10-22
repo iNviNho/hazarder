@@ -18,4 +18,6 @@ interface Crawlable
 
     public function updateMatch($match, $data);
 
+    public function isEnabled();
+
 }

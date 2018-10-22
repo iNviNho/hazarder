@@ -14,7 +14,7 @@ use App\Settings;
 use App\User;
 use Illuminate\Console\Command;
 
-class UpdateSettingsForBettingProviders extends Command
+class BettingProvidersUpdate extends Command
 {
 
     protected $signature  = "betting_providers:update";
@@ -28,7 +28,6 @@ class UpdateSettingsForBettingProviders extends Command
         $users = User::all();
 
         foreach ($users as $u) {
-
             foreach ($bettingProviders as $bP) {
 
                 $hasSettingsForThisBP = Settings::where([
@@ -64,7 +63,6 @@ class UpdateSettingsForBettingProviders extends Command
                 }
 
             }
-
         }
 
         $this->info("Settings for users and betting providers were updated");
