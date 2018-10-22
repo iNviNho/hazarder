@@ -45,7 +45,7 @@
                     <strong>Hazarder</strong>
                 </a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent">
-                    <span class="fa fa-angle-down"  style="color: #FFF; font-size: 28px;"></span>
+                    <span class="fa fa-angle-down"  style="color: black; font-size: 28px;"></span>
                 </button>
 
                 <div class="collapse navbar-collapse" id="navbarSupportedContent" style="text-align: right;">
