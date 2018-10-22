@@ -181,7 +181,10 @@ class CrawlerSecond implements Crawlable
                 }
 
                 $matchBet = new MatchBet();
-                $matchBet->name = $selection->name;
+                if (!$matchBet->setName($selection->tip)) {
+                    // don't parse
+                    continue;
+                }
                 $matchBet->value = $selection->odds;
 
                 $matchBet->datainfo = $selection->tip;

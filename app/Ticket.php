@@ -9,10 +9,9 @@ use Illuminate\Database\Eloquent\Model;
 class Ticket extends Model
 {
 
+    // we will only support Marcingale now
     public static $GAME_TYPES = [
         "marcingale",
-        "oneten",
-        "onetwenty",
     ];
 
     /**
@@ -43,21 +42,9 @@ class Ticket extends Model
             $rate = trim($matchBet->value);
 
             $game_type = null;
-            // type of onetype
-            // if $rate <= 1.10
-            if ( (bccomp($rate, "1.11", 2) == -1) && ($rate != "")) {
-                $game_type = "oneten";
-            }
-
-            // type of twotwenty
-            // if $rate > 1.1 && $rate <= 1.20
-            if (bccomp($rate, "1.1", 2) == 1 && bccomp($rate, "1.21", 2) == -1) {
-                $game_type = "onetwenty";
-            }
-
             // type of marcingale
-            // if $rate >= 1.9 && $rate <= 2.11
-            if (bccomp($rate, "1.89", 2) == 1 && bccomp($rate, "2.11", 2) == -1) {
+            // if $rate >= 1.9 && $rate <= 2.06
+            if (bccomp($rate, "1.89", 2) == 1 && bccomp($rate, "2.06", 2) == -1) {
                 $game_type = "marcingale";
             }
 
@@ -66,12 +53,11 @@ class Ticket extends Model
 
                 // for marcingale check our custom logic
                 if ($game_type == "marcingale") {
-                    // if it is not valid, do not proceed
-                    if (!self::isValidMarcingale($match, $matchBet)) {
+
+                    if (!in_array(trim($match->type), ["goldengame", "normal"])) {
                         continue;
                     }
                 }
-
 
                 $ticket = self::createAndInsertTicket($match, $matchBet, "prepared", "tobeplayed", $game_type);
                 if (!$ticket) {
@@ -84,68 +70,66 @@ class Ticket extends Model
 
     }
 
-    private static function isValidMarcingale($match, $matchBet) {
+    /**
+     * This function checks if matchBet is favorit in given $match
+     * @param $match
+     * @param $matchBet
+     * @return bool
+     */
+    private static function isMatchBetFavoritInThisMatch($match, $matchBet) {
 
-        // we only support goldengame|normal for marcingale
-        if (in_array(trim($match->type), ["goldengame", "normal"])) {
+        // for golden game, we simply have to be favorit
+        if ($match->type == "goldengame") {
 
-            // for golden game, we simply have to be favorit
-            if ($match->type == "goldengame") {
+            $otherBet = null;
+            foreach ($match->getMatchBets()->get() as $matchBetForeach) {
+                if ($matchBetForeach->id != $matchBet->id) {
+                    $otherBet = $matchBetForeach;
+                }
+            }
 
-                $otherBet = null;
-                foreach ($match->getMatchBets()->get() as $matchBetForeach) {
-                    if ($matchBetForeach->id != $matchBet->id) {
-                        $otherBet = $matchBetForeach;
-                    }
+            // lets finally check if we are favorits
+            if (bccomp($matchBet->value, $otherBet->value, 2) < 0) {
+                return true;
+            } else {
+                return false;
+            }
+
+        }
+
+        // for normal
+        if ($match->type == "normal") {
+
+            // we take only 1, 2 name bets
+            // 0, 10 or 02 will never be favorites in marcingale
+            if (in_array(trim($matchBet->name), ["1", "2"])) {
+                // wow, we here
+                // lets check if we are favorits
+                $oppositeName = "1";
+                if (trim($matchBet->name) == "1") {
+                    $oppositeName = "2";
                 }
 
+                $otherBet = MatchBet::where("match_id", "=", $match->id)
+                    ->where("name", "=", $oppositeName)
+                    ->first();
+
                 // lets finally check if we are favorits
-                if (bccomp($matchBet->value, $otherBet->value, 2) < 0) {
+                if (!is_null($otherBet) && bccomp($matchBet->value, $otherBet->value, 2) < 0) {
                     return true;
                 } else {
                     return false;
                 }
 
+            } else {
+                // this should never come here
+                return false;
             }
 
-            // for normal
-            if ($match->type == "normal") {
-
-                // we take only 1, 2 name bets
-                // 0, 10 or 02 will never be favorites in marcingale
-                if (in_array(trim($matchBet->name), ["1", "2"])) {
-                    // wow, we here
-                    // lets check if we are favorits
-                    $oppositeName = "1";
-                    if (trim($matchBet->name) == "1") {
-                        $oppositeName = "2";
-                    }
-
-                    $otherBet = MatchBet::where("match_id", "=", $match->id)
-                        ->where("name", "=", $oppositeName)
-                        ->first();
-
-                    // lets finally check if we are favorits
-                    if (bccomp($matchBet->value, $otherBet->value, 2) < 0) {
-                        return true;
-                    } else {
-                        return false;
-                    }
-
-                } else {
-                    // this should never come here
-                    return false;
-                }
-
-            }
-
-            // nothing returned true? then return false
-            return false;
-
-        } else {
-            return false;
         }
 
+        // nothing returned true? then return false
+        return false;
     }
 
     /**

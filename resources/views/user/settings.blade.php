@@ -3,7 +3,7 @@
 @section('content')
     <div class="container my-container">
         <div class="row justify-content-center">
-            <div class="col-md-6">
+            <div class="col-md-8">
 
                 <div class="basic-content">
                     <h4>Settings</h4>
@@ -57,6 +57,15 @@
                             </div>
 
                             <div class="form-group row">
+                                <label for="email" class="col-sm-4 col-form-label text-md-right">Bet only on favorits</label>
+                                <div class="col-md-6">
+                                    <input type="hidden" name="only_favorits-{{$setting->id}}" value="{{$setting->only_favorits}}">
+                                    <input type="checkbox" class="checkbox-switch-only-favorits" style="width: 25px; height: 25px;"  @if ($setting->only_favorits == 1) checked @endif>
+                                </div>
+                            </div>
+
+
+                            <div class="form-group row">
                                 <label for="email" class="col-sm-4 col-form-label text-md-right">Marcingale finish</label>
                                 <div class="col-md-6">
                                     <input type="hidden" name="marcingale_finish-{{$setting->id}}" value="{{$setting->marcingale_finish}}">
@@ -89,6 +98,8 @@
                             tickets in one marcingale round. For example by specifying number 4, it means that
                             maximum 4 tickets could be automatically bet to the particular round<br>
                             <span class="fas fa-info-circle"></span> <strong>Bet amount</strong> - Starting bet amount for a first ticket of marcingale round<br>
+                            <span class="fas fa-info-circle"></span> <strong>Bet only on favorits</strong> - By having this checkbox checked, hazarder will only bet on
+                            a team that is favorit or in another words - has better rate than his opponent<br>
                             <span class="fas fa-info-circle"></span> <strong>Marcingale finish</strong> - By having this checkbox checked, no new marcingale rounds will be started<br>
                             <span class="fas fa-info-circle"></span> <strong>Active</strong> - By setting this value, you can enable/disable this betting provider.
                         </p>
@@ -101,7 +112,7 @@
     <script type="text/javascript">
         $(function() {
 
-            $(".checkbox-switch, .checkbox-switch-active").change(function() {
+            $(".checkbox-switch, .checkbox-switch-active, .checkbox-switch-only-favorits").change(function() {
                 if(this.checked) {
                     $(this).prev().attr("value", 1);
                 } else {

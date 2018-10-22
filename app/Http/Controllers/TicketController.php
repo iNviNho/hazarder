@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Aginev\Datagrid\Datagrid;
 use App\Ticket;
 use App\UserTicket;
 use Carbon\Carbon;

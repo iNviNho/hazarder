@@ -24,7 +24,7 @@ class TicketsPrepareCommand extends Command
         $this->info("Prepare tickets from all matches that has not been played yet");
 
         $matches = Match::all()
-            ->where('date_of_game', '>=', Carbon::now()->format("Y-m-d H:i:s"));
+            ->where('date_of_game', '>=', Carbon::now()->addMinutes(15)->format("Y-m-d H:i:s"));
         foreach ($matches as $match) {
             Ticket::tryToCreateTicketFromMatch($match, $this);
         }
