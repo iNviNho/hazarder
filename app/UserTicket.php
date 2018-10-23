@@ -145,6 +145,14 @@ class UserTicket extends Model
         $lastTicket = $ticketSummaryHtml->find("div[id=ticket-list]", 0)->children()[1];
         $externalTicketID = $lastTicket->getAttribute("href");
 
+        // by this check we can check if bet was successful, $externalTicketID will always be unique
+        $externalTicketExists = UserTicket::where("external_ticket_id", $externalTicketID)->first();
+        if (!is_null($externalTicketExists)) {
+            $this->status = "approved";
+            $this->save();
+            throw new \Exception("Ticket already exists, probably failed bet for UserTicket: " . $this->id);
+        }
+
         preg_match("/ticket_id=(.*?)kind=MAIN/", $externalTicketID, $results);
 
         $this->external_ticket_id = $results[1];
