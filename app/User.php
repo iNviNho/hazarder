@@ -2,7 +2,6 @@
 namespace App;
 
 use App\Events\UserLogEvent;
-use App\Services\AppSettings;
 use Carbon\Carbon;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -173,31 +172,62 @@ class User extends Authenticatable
 
     }
 
-    public function updateCredit() {
+    /**
+     * Updates credit of given bettingProvider
+     * @param $bettingProviderID
+     */
+    public function updateCredit($bettingProviderID) {
 
-        // first insert into basket
-        $user = new \App\Services\User\User($this);
-        if (!$user->login()) {
-            event(new UserLogEvent("Failed login while updating credit", $this->user->id));
-            return;
+        if ($bettingProviderID == BettingProvider::FIRST_PROVIDER_F) {
+
+            $user = new \App\Services\User\User($this);
+            if (!$user->login($this, $bettingProviderID)) {
+                event(new UserLogEvent("Failed login while updating credit", $this->id));
+                return;
+            }
+
+            $guzzleClient = $user->getGuzzleForUserAndBP($this, $bettingProviderID);
+            // clear ticket & have fresh one
+            $baseUrl = $guzzleClient->get(env("BASE_URL"));
+
+            $ticketSummaryHtml = HtmlDomParser::str_get_html($baseUrl->getBody()->getContents());
+
+            $credit = $ticketSummaryHtml->find("div[class=account-balance]", 0)->plaintext;
+
+            $settings = $this->getSettings($bettingProviderID);
+            $settings->credit = BC::convertScientificNotationToString($credit);
+            $settings->credit_update_time = Carbon::now();
+            $settings->save();
+
+            event(new UserLogEvent("Users credit with ID: " . $this->id . " was successfully updated to: " . $credit, $this->id));
+
+        } elseif ($bettingProviderID == BettingProvider::SECOND_PROVIDER_N) {
+
+            $user = new \App\Services\User\User($this);
+            if (!$user->login($this, $bettingProviderID)) {
+                event(new UserLogEvent("Failed login while updating credit", $this->id));
+                return;
+            }
+
+            $guzzleClient = $user->getGuzzleForUserAndBP($this, $bettingProviderID);
+            $response = $guzzleClient->get(env("BASE_URL_SECOND_PROVIDER"))->getBody()->getContents();
+
+            $userData = json_decode($response);
+            $settings = $this->getSettings($bettingProviderID);
+            $settings->credit = BC::convertScientificNotationToString($userData->user->credit);
+            $settings->credit_update_time = Carbon::now();
+            $settings->save();
+
+            event(new UserLogEvent("Users credit with ID: " . $this->id . " was successfully updated to: " . $userData->user->credit, $this->id));
         }
-        $guzzleClient = $user->getUserGuzzle();
 
-        // clear ticket & have fresh one
-        $baseUrl = $guzzleClient->get(env("BASE_URL"));
-
-        $ticketSummaryHtml = HtmlDomParser::str_get_html($baseUrl->getBody()->getContents());
-
-        $credit = $ticketSummaryHtml->find("strong[class=credit]", 0)->plaintext;
-
-        $this->credit = trim($credit);
-        $this->credit_update_time = Carbon::now();
-
-        $this->save();
-
-        event(new UserLogEvent("Users credit with ID: " . $this->id . " was successfully updated to: " . $this->credit, $this->id));
     }
 
+    /**
+     * Get settings for given betting provider
+     * @param $bettingProviderID
+     * @return mixed
+     */
     public function getSettings($bettingProviderID) {
         return Settings::where([
             "user_id" => $this->id,
@@ -205,11 +235,21 @@ class User extends Authenticatable
         ])->first();
     }
 
+    /**
+     * Get time when was the credit last update given betting provider
+     * @param $bettingProviderID
+     * @return Carbon
+     */
     public function getCreditUpdateTime($bettingProviderID) {
 
         return Carbon::createFromTimeString($this->getSettings($bettingProviderID)->credit_update_time);
     }
 
+    /**
+     * Get header for betting provider
+     * @param $bettingProviderID
+     * @return array
+     */
     public function getHeader($bettingProviderID) {
 
         $settings = Settings::where([
@@ -221,9 +261,19 @@ class User extends Authenticatable
         return ["User-Agent" => $settings->header];
     }
 
-    public function getCredit() {
+    /**
+     * Returns either total sum of credit in betting providers
+     * Or returns credit for one betting provider
+     * @param null $bettingProviderID
+     * @return mixed
+     */
+    public function getCredit($bettingProviderID = null) {
 
-        $credit = Settings::where(["user_id" => $this->id])->selectRaw("sum(credit) as credit")->pluck("credit")->first();
+        $settings = ["user_id" => $this->id];
+        if (!is_null($bettingProviderID)) {
+            $settings["betting_provider_id"] = $bettingProviderID;
+        }
+        $credit = Settings::where($settings)->selectRaw("sum(credit) as credit")->pluck("credit")->first();
 
         return $credit;
     }

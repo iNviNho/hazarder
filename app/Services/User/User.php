@@ -34,8 +34,8 @@ class User
             //login
             $body = [
                 "form_params" => [
-                    "username" => $userEntity->getSettings()->first()->username,
-                    "password" => $userEntity->getSettings()->first()->password,
+                    "username" => $userEntity->getSettings($bettingProviderID)->first()->username,
+                    "password" => $userEntity->getSettings($bettingProviderID)->first()->password,
                 ]
             ];
             $guzzleClient->post( env("LOGIN_URL_FIRST_BETTING_PROVIDER_F"), $body);
@@ -48,11 +48,11 @@ class User
             //login
             $body = [
                 "form_params" => [
-                    "meno" => $userEntity->getSettings()->first()->username,
-                    "heslo" => $userEntity->getSettings()->first()->password,
+                    "meno" => $userEntity->getSettings($bettingProviderID)->first()->username,
+                    "heslo" => $userEntity->getSettings($bettingProviderID)->first()->password,
                 ]
             ];
-            $response = $guzzleClient->post( env("LOGIN_URL_SECOND_BETTING_PROVIDER_N"), $body);
+            $guzzleClient->post( env("LOGIN_URL_SECOND_BETTING_PROVIDER_N"), $body);
 
         }
 
@@ -92,9 +92,7 @@ class User
 
             try {
                 $response = $guzzleClient->get(env("USER_LOGGED_IN_CHECK_SECOND_BETTING_PROVIDER_N"));
-//                dd($response);
             } catch (\Throwable $e) {
-//                throw $e;
                 return false;
             }
 
@@ -115,12 +113,12 @@ class User
      * @param $bettingProviderID
      * @return Client
      */
-    private function getGuzzleForUserAndBP(\App\User $userEntity, $bettingProviderID) {
+    public function getGuzzleForUserAndBP(\App\User $userEntity, $bettingProviderID) {
 
         // prepare users cookieJar
         $cookieJar = new FileCookieJar("cookie_jar_user_id_" . $userEntity->id . "_betting_provider_" . $bettingProviderID . ".txt", TRUE);
         // get user header
-        $header = $userEntity->getHeader();
+        $header = $userEntity->getHeader($bettingProviderID);
 
         // return prepared Guzzle client
         return new Client([

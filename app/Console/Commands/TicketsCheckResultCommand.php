@@ -8,6 +8,8 @@
 
 namespace App\Console\Commands;
 
+use App\BettingProvider;
+use App\Settings;
 use App\User;
 use App\UserTicket;
 use Carbon\Carbon;
@@ -23,29 +25,51 @@ class TicketsCheckResultCommand extends Command
 
         $this->info("Check latest tickets");
 
-        $users = User::all()
-            ->where("is_authorized", "=", "1");
+        // first loop through user betting provider
+        $bettingProviders = BettingProvider::all();
+        foreach ($bettingProviders as $bP) {
 
-        foreach ($users as $user) {
+            // is this bettingProvider enabled?
+            if (!BettingProvider::isEnabled($bP->id)) {
+                continue;
+            }
 
-            $userTickets = UserTicket::where("status", "=", "bet")
-                ->where("user_id", "=", $user->id);
+            // then loop through users
+            $users = User::all()
+                ->where("is_authorized", "=", "1");
+            foreach ($users as $user) {
 
-            foreach ($userTickets->get() as $userTicket) {
-
-                // check user tickets which match was played 2.5 hours ago
-                $nowTimestamp = Carbon::now()->getTimestamp();
-                $matchFinishTime = Carbon::createFromTimeString($userTicket->ticket->match->date_of_game)->addMinutes(150)->getTimestamp();
-
-                if ($nowTimestamp > $matchFinishTime) {
-                    $userTicket->tryToCheckResult($this);
-
-                    sleep(rand(5, 15));
+                // did user enabled it?
+                if (!Settings::isBettingProviderEnabled($user->id, $bP->id)) {
+                    continue;
                 }
+
+                // now do the checking
+                // get all bet user tickets
+                $userTickets = UserTicket::where("status", "=", "bet")
+                    ->where("user_id", "=", $user->id)
+                    ->whereHas('ticket', function ($q) use($bP) {
+                        $q->whereHas("match", function ($q) use($bP) {
+                            $q->where("betting_provider_id","=", $bP->id);
+                        });
+                    });
+                $nowTimestamp = Carbon::now()->getTimestamp();
+                foreach ($userTickets->get() as $userTicket) {
+
+                    // game had to be played at least 2.5 hours ago
+                    $matchFinishTime = Carbon::createFromTimeString($userTicket->ticket->match->date_of_game)->addMinutes(150)->getTimestamp();
+
+                    if ($nowTimestamp > $matchFinishTime) {
+                        $userTicket->tryToCheckResult($this);
+                        sleep(rand(5, 15));
+                    }
+
+                }
+
+                $user->updateCredit($bP->id);
 
             }
 
-            $user->updateCredit();
         }
 
         $this->info("Check for check results was done.");

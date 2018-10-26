@@ -26,16 +26,33 @@ class UserTicket extends Model
         return $this->belongsTo('App\User');
     }
 
-    public function getLinkToBettingSite() {
+    /**
+     * Return save link for concrete betting site
+     * @param $bettingProviderID
+     * @return string
+     */
+    public function getLinkToBettingSite($bettingProviderID) {
 
-        $externalTicketId = $this->external_ticket_id;
+        if ($bettingProviderID == BettingProvider::FIRST_PROVIDER_F) {
 
-        // some weird pattern replace
-        $externalTicketId = str_replace("_", "%2F", $externalTicketId);
+            $externalTicketId = $this->external_ticket_id;
 
-        $link = env("BASE_TICKET_SHOW") . $externalTicketId . "&kind=MAIN";
+            // some weird pattern replace
+            $externalTicketId = str_replace("_", "%2F", $externalTicketId);
 
-        return $link;
+            $link = env("BASE_TICKET_SHOW") . $externalTicketId . "&kind=MAIN";
+
+            return $link;
+
+        } elseif ($bettingProviderID == BettingProvider::SECOND_PROVIDER_N) {
+
+            $externalTicketId = $this->external_ticket_id;
+
+            $link = env("BASE_TICKET_SHOW_SECOND_BETTING_PROVIDER") . $externalTicketId . "?lang=sk";
+
+            return $link;
+
+        }
     }
 
     /**
@@ -165,88 +182,106 @@ class UserTicket extends Model
 
     public function tryToCheckResult() {
 
-        $user = new \App\Services\User\User($this->user);
-        if (!$user->login()) {
-            event(new UserLogEvent("Failed login while betting UserTicket with ID: " . $this->id, $this->user->id, $this->id));
-            return;
+        $bettingProviderID = $this->ticket->match->betting_provider_id;
+
+        $user = new \App\Services\User\User();
+
+        if ($bettingProviderID == BettingProvider::FIRST_PROVIDER_F) {
+
+            $url = $this->getLinkToBettingSite($bettingProviderID);
+
+            $ticketRequest = $user->getGuzzleForUserAndBP($this->user, $bettingProviderID)->get($url);
+
+            $ticketHTML = HtmlDomParser::str_get_html($ticketRequest->getBody()->getContents());
+
+            $resultClass = $ticketHTML->find("td[class=result-icon-cell]", 0)
+                ->children[0]->getAttribute("class");
+
+            if (strpos($resultClass, "NON_WINNING") !== false) {
+                $this->loose();
+                event(new UserLogEvent("UserTicket with ID: " . $this->id . " was marked as LOST.", $this->user->id, $this->id));
+            } elseif (strpos($resultClass, "WINNING") !== false) {
+                $this->win();
+                event(new UserLogEvent("UserTicket with ID: " . $this->id . " was marked as WON.", $this->user->id, $this->id));
+            }
+
+            // try to finalize
+            $this->finalize($ticketHTML);
+
+        } elseif ($bettingProviderID == BettingProvider::SECOND_PROVIDER_N) {
+
+            $url = $this->getLinkToBettingSite($bettingProviderID);
+
+            $ticketRequest = $user->getGuzzleForUserAndBP($this->user, $bettingProviderID)->get($url);
+
+            $ticketData = json_decode($ticketRequest->getBody()->getContents());
+
+            if ($ticketData->status == "Lost") {
+                $this->loose();
+            } elseif ($ticketData->status == "Won") {
+                $this->win();
+            }
+
+            // try to finalize
+            $this->finalize($ticketData);
+
         }
 
-        $url = $this->getLinkToBettingSite();
 
-        $ticketRequest = $user->getUserGuzzle()->get($url);
+    }
 
-        $ticketHTML = HtmlDomParser::str_get_html($ticketRequest->getBody()->getContents());
+    public function finalize($ticketData = null) {
 
-        $resultClass = $ticketHTML->find("td[class=result-icon-cell]", 0)
-            ->children[0]->getAttribute("class");
+        if (is_null($ticketData)) {
 
-        if (strpos($resultClass, "NON_WINNING") !== false) {
-            $this->loose();
-            event(new UserLogEvent("UserTicket with ID: " . $this->id . " was marked as LOST.", $this->user->id, $this->id));
-        } elseif (strpos($resultClass, "WINNING") !== false) {
-            $this->win();
-            event(new UserLogEvent("UserTicket with ID: " . $this->id . " was marked as WON.", $this->user->id, $this->id));
+
+
+        }
+
+        $bettingProviderID = $this->ticket->match->betting_provider_id;
+//        $user = new \App\Services\User\User();
+
+        if ($bettingProviderID == BettingProvider::FIRST_PROVIDER_F) {
+
+            $finalBet = $ticketData->find("tr[class=bet-type row-2]", 0)->find("td[class=value]", 0)->plaintext;
+
+            if (!is_null($finalBet) && $this->is_finalized == 0) {
+
+                $this->bet_rate = $finalBet;
+
+                $this->bet_possible_win = BC::mul($this->bet_amount, $this->bet_rate, 3);
+                $this->bet_possible_win = BC::roundUp($this->bet_possible_win, 2);
+
+                $this->bet_possible_clear_win = bcsub($this->bet_possible_win, $this->bet_amount, "2");
+
+                $this->is_finalized = 1;
+
+                $this->save();
+
+                event(new UserLogEvent("UserTicket with ID: " . $this->id . " was successfully finalized.", $this->user->id, $this->id));
+            }
+
         } else {
-            // not result yet
-        }
 
+            if ($this->is_finalized == 0) {
 
-        // lets also try to finalize
-        $finalBet = $ticketHTML->find("tr[class=bet-type row-2]", 0)->find("td[class=value]", 0)->plaintext;
+                $this->bet_rate = $ticketData->odds;
+                $this->bet_possible_win = $ticketData->win;
+                $this->bet_possible_clear_win = bcsub($this->bet_possible_win, $this->bet_amount, "2");
 
-        if (!is_null($finalBet) && $this->is_finalized == 0) {
+                $this->is_finalized = 1;
+                $this->save();
 
-            $this->bet_rate = $finalBet;
+                event(new UserLogEvent("UserTicket with ID: " . $this->id . " was successfully finalized.", $this->user->id, $this->id));
+            }
 
-            $this->bet_possible_win = BC::mul($this->bet_amount, $this->bet_rate, 3);
-            $this->bet_possible_win = BC::roundUp($this->bet_possible_win, 2);
-
-            $this->bet_possible_clear_win = bcsub($this->bet_possible_win, $this->bet_amount, "2");
-
-            $this->is_finalized = 1;
-
-            $this->save();
-
-            event(new UserLogEvent("UserTicket with ID: " . $this->id . " was successfully finalized.", $this->user->id, $this->id));
         }
 
     }
 
-    public function finalize() {
-
-        $user = new \App\Services\User\User($this->user);
-        if (!$user->login()) {
-            event(new UserLogEvent("Failed login while betting UserTicket with ID: " . $this->id, $this->user->id, $this->id));
-            return;
-        }
-
-        $url = $this->getLinkToBettingSite();
-        
-        event(new UserLogEvent("Starting to finalize: " . $this->id . " with this link to betting site: " . $url, $this->user->id, $this->id));
-        
-        $ticketRequest = $user->getUserGuzzle()->get($url);
-
-        $ticketHTML = HtmlDomParser::str_get_html($ticketRequest->getBody()->getContents());
-
-        $finalBet = $ticketHTML->find("tr[class=bet-type row-2]", 0)->find("td[class=value]", 0)->plaintext;
-
-        if (!is_null($finalBet)) {
-
-            $this->bet_rate = $finalBet;
-
-            $this->bet_possible_win = BC::mul($this->bet_amount, $this->bet_rate, 3);
-            $this->bet_possible_win = BC::roundUp($this->bet_possible_win, 2);
-
-            $this->bet_possible_clear_win = bcsub($this->bet_possible_win, $this->bet_amount, "2");
-
-            $this->is_finalized = 1;
-
-            $this->save();
-
-            event(new UserLogEvent("UserTicket with ID: " . $this->id . " was successfully finalized.", $this->user->id, $this->id));
-        }
-    }
-
+    /**
+     * Mark user ticket as win :happy:
+     */
     public function win() {
 
         $this->bet_win = 1;
@@ -259,6 +294,9 @@ class UserTicket extends Model
         }
     }
 
+    /**
+     * Mark user ticket as lost :(
+     */
     public function loose() {
 
         $this->bet_win = -1;
