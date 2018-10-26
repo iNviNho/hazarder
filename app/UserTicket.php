@@ -184,17 +184,11 @@ class UserTicket extends Model
 
         $bettingProviderID = $this->ticket->match->betting_provider_id;
 
-        $user = new \App\Services\User\User();
-
         if ($bettingProviderID == BettingProvider::FIRST_PROVIDER_F) {
 
-            $url = $this->getLinkToBettingSite($bettingProviderID);
+            $ticketData = $this->getTicketData();
 
-            $ticketRequest = $user->getGuzzleForUserAndBP($this->user, $bettingProviderID)->get($url);
-
-            $ticketHTML = HtmlDomParser::str_get_html($ticketRequest->getBody()->getContents());
-
-            $resultClass = $ticketHTML->find("td[class=result-icon-cell]", 0)
+            $resultClass = $ticketData->find("td[class=result-icon-cell]", 0)
                 ->children[0]->getAttribute("class");
 
             if (strpos($resultClass, "NON_WINNING") !== false) {
@@ -206,15 +200,11 @@ class UserTicket extends Model
             }
 
             // try to finalize
-            $this->finalize($ticketHTML);
+            $this->finalize($ticketData);
 
         } elseif ($bettingProviderID == BettingProvider::SECOND_PROVIDER_N) {
 
-            $url = $this->getLinkToBettingSite($bettingProviderID);
-
-            $ticketRequest = $user->getGuzzleForUserAndBP($this->user, $bettingProviderID)->get($url);
-
-            $ticketData = json_decode($ticketRequest->getBody()->getContents());
+            $ticketData = $this->getTicketData();
 
             if ($ticketData->status == "Lost") {
                 $this->loose();
@@ -230,16 +220,18 @@ class UserTicket extends Model
 
     }
 
+    /**
+     * This function will try to finalize user ticket so we have correct bet_rates and amounts
+     * @param null $ticketData
+     */
     public function finalize($ticketData = null) {
 
-        if (is_null($ticketData)) {
-
-
-
-        }
-
         $bettingProviderID = $this->ticket->match->betting_provider_id;
-//        $user = new \App\Services\User\User();
+
+        // if ticket data is empty, we have to provide $ticketData
+        if (is_null($ticketData)) {
+            $ticketData = $this->getTicketData();
+        }
 
         if ($bettingProviderID == BettingProvider::FIRST_PROVIDER_F) {
 
@@ -275,6 +267,29 @@ class UserTicket extends Model
                 event(new UserLogEvent("UserTicket with ID: " . $this->id . " was successfully finalized.", $this->user->id, $this->id));
             }
 
+        }
+
+    }
+
+    /**
+     * Return ticketdata from betting site
+     */
+    private function getTicketData() {
+
+        $user = new \App\Services\User\User();
+        $bettingProviderID = $this->ticket->match->betting_provider_id;
+        $guzzleClient = $user->getGuzzleForUserAndBP($this->user, $bettingProviderID);
+        $ticketLink = $this->getLinkToBettingSite($bettingProviderID);
+
+        if ($bettingProviderID == BettingProvider::FIRST_PROVIDER_F) {
+
+            $ticketRequest = $guzzleClient->get($ticketLink);
+            return HtmlDomParser::str_get_html($ticketRequest->getBody()->getContents());
+
+        } elseif($bettingProviderID == BettingProvider::SECOND_PROVIDER_N) {
+
+            $ticketRequest = $guzzleClient->get($ticketLink);
+            return json_decode($ticketRequest->getBody()->getContents());
         }
 
     }
