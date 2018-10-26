@@ -33,12 +33,13 @@ class MarcingaleUserTicket extends Model
      * @return MarcingaleUserRound
      * @throws Exception
      */
-    public static function shouldWeCreateNewMarcingaleTicketRound($user) {
+    public static function shouldWeCreateNewMarcingaleUserRound($user, $bettingProviderID) {
 
         // lets get every marcingale user round that is not finished = OPEN
         $marcingaleUserRounds = MarcingaleUserRound::where([
             "user_id" => $user->id,
-            "status" => "open"
+            "status" => "open",
+            "betting_provider_id" => $bettingProviderID,
         ])
         ->orderBy("created_at", "ASC")
         ->get();
@@ -57,9 +58,9 @@ class MarcingaleUserTicket extends Model
             // and lets find out if by any chance was not user ticket either:
             // a) canceled by some error so we have to continue with the marcingale
             // b) or it was bet and done and since we have only open rounds, this must be failed
-            $status = $marcingaleUserTicket->userTicket()->first()->status;
+            $status = $marcingaleUserTicket->userTicket->status;
             if ( in_array($status, ["canceled", "betanddone"]) ) {
-                if ($marcingaleUserTicket->userTicket()->first()->bet_win < 1) {
+                if ($marcingaleUserTicket->userTicket->bet_win < 1) {
                     return $marUserRound;
                 }
                 throw new \Exception("This should never happen" . json_encode($marcingaleUserTicket));
@@ -70,12 +71,13 @@ class MarcingaleUserTicket extends Model
         return true;
     }
 
-    public static function createFreshMarcingaleUserTicketRound($user) {
+    public static function createFreshMarcingaleUserRound($user, $bettingProviderID) {
 
         $marcingaleUserRound = new MarcingaleUserRound();
         $marcingaleUserRound->user_id = $user->id;
         $marcingaleUserRound->level_finished = 1;
         $marcingaleUserRound->status = "open";
+        $marcingaleUserRound->betting_provider_id = $bettingProviderID;
 
         $marcingaleUserRound->save();
 
@@ -104,9 +106,9 @@ class MarcingaleUserTicket extends Model
         return $marcingaleUserTicket;
     }
 
-    public static function getBetAmountForContinuousUserTicket(MarcingaleUserRound $marRound, $level) {
+    public static function getBetAmountForContinuousMarcingaleUserTicket(MarcingaleUserRound $marRound, $level) {
 
-        $startedAmountOfThisRound = $marRound->getMarcingaleUserTickets()->get()->last()->userTicket()->first()->bet_amount;
+        $startedAmountOfThisRound = $marRound->getMarcingaleUserTickets()->get()->last()->userTicket->bet_amount;
 
         $betAmount = $startedAmountOfThisRound;
         for ($i = 1; $i < $level; $i++) {

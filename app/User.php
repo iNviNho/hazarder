@@ -67,7 +67,7 @@ class User extends Authenticatable
         foreach ($tickets->get() as $ticket) {
 
             // safety check to approve only the ones we intend to
-            if ($ticket->match()->first()->betting_provider_id != $bettingProviderID) {
+            if ($ticket->match->betting_provider_id != $bettingProviderID) {
                 continue;
             }
 
@@ -98,12 +98,12 @@ class User extends Authenticatable
 
                     // first immediately check if this user maybe wants to bet only on favorits
                     // and if yes, this matchBet has to be bet on favorit
-                    if ($userSettings->only_favorits == 1 && !Ticket::isMatchBetFavoritInThisMatch($ticket->match()->first(), $ticket->matchBet()->first())) {
+                    if ($userSettings->only_favorits == 1 && !Ticket::isMatchBetFavoritInThisMatch($ticket->match, $ticket->matchBet)) {
                         continue;
                     }
 
                     // lets check if by any chance we don't have already bet on this match
-                    // in marcingale don't do it, even if the odd is now on opposite match
+                    // even if the odd is now on opposite match
                     $alreadyBetOnMatchTimes = UserTicket::whereHas("ticket", function($q) use($ticket) {
                             $q->where("match_id", $ticket->match_id);
                             $q->where("game_type", "marcingale");
@@ -114,18 +114,19 @@ class User extends Authenticatable
                         continue;
                     }
 
-                    $shouldWeCreateNewMarcingaleTicketRound = MarcingaleUserTicket::shouldWeCreateNewMarcingaleTicketRound($this);
+                    $shouldWeCreateNewMarcingaleTicketRound = MarcingaleUserTicket::shouldWeCreateNewMarcingaleUserRound($this, $bettingProviderID);
                     if ($shouldWeCreateNewMarcingaleTicketRound === true) {
-                        // if user did set finish marcingale to 1, we dont create new marcingale user tickets
+
+                        // if user did set finish marcingale to 1, we don't create new marcingale user tickets
                         if ($userSettings->marcingale_finish == 1) {
                             continue;
                         }
 
-                        $marcingaleUserTicket = MarcingaleUserTicket::createFreshMarcingaleUserTicketRound($this);
+                        $marcingaleUserTicket = MarcingaleUserTicket::createFreshMarcingaleUserRound($this, $bettingProviderID);
                         $userTicket->bet_amount = $userSettings->bet_amount;
                     } else {
                         $marcingaleUserTicket = MarcingaleUserTicket::createContinuousMarcingaleUserTicket($this, $shouldWeCreateNewMarcingaleTicketRound);
-                        $userTicket->bet_amount = MarcingaleUserTicket::getBetAmountForContinuousUserTicket($shouldWeCreateNewMarcingaleTicketRound, $marcingaleUserTicket->level);
+                        $userTicket->bet_amount = MarcingaleUserTicket::getBetAmountForContinuousMarcingaleUserTicket($shouldWeCreateNewMarcingaleTicketRound, $marcingaleUserTicket->level);
                     }
 
                 } else {

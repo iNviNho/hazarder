@@ -10,6 +10,7 @@ namespace App\Services\Crawler;
 
 
 use App\BettingProvider;
+use App\Exceptions\Handler;
 use App\Match;
 use App\MatchBet;
 use App\Services\AppSettings;
@@ -120,116 +121,128 @@ class CrawlerFirst implements Crawlable
                 // game is li class=event
                 foreach ($games as $game) {
 
-                    $match = new Match();
+                    try {
 
-                    $match->sport = $sport;
+                        $match = new Match();
 
-                    $match->unique_id = $game->getAttribute("id");
+                        $match->sport = $sport;
 
-                    // do we have this unique_id already in DB?
-                    if (MatchService::alreadyExists($match->unique_id)) {
-                        // don't parse again, please just update rates of match bets
-                        $this->updateMatch($match, $game);
+                        $match->unique_id = $game->getAttribute("id");
+
+                        // do we have this unique_id already in DB?
+                        if (MatchService::alreadyExists($match->unique_id)) {
+                            // don't parse again, please just update rates of match bets
+                            $this->updateMatch($match, $game);
+                            continue;
+                        }
+
+                        $match->category = $group->find("h3[class=title]", 0);
+                        if (!is_null($match->category)) {
+                            $match->category = $match->category->plaintext;
+                            $match->category = trim(str_replace("\t", "", $match->category));
+                        } else {
+                            $match->category = "-";
+                        }
+
+                        $match->name = trim($game->find("div[class=name]", 0)->plaintext);
+                        $match->name = preg_replace("/\s\s+/", "", $match->name);
+
+
+                        $teams = explode("&times;", $match->name);
+                        if (count($teams) > 1) {
+                            $match->teama = trim($teams[0]);
+                            // perform check for team a if it has (F)
+                            $match->teama = trim(str_replace("F()", "", $match->teama));
+                            $match->teamb = trim($teams[1]);
+                        }
+                        $match->name = $match->teama . " vs " . $match->teamb;
+
+                        $today = new Carbon();
+                        $match->created_at = $today;
+
+                        $match->date_of_game = $game->find("div[class=date]", 0)->plaintext;
+
+                        if (strpos($match->date_of_game, 'DNES') === false) {
+                            // it is "zajtra"
+                            $match->date_of_game = str_replace('ZAJTRA', "", $match->date_of_game);
+                            $date = explode(":", $match->date_of_game);
+
+                            $dateOfGame = new Carbon();
+                            $dateOfGame->setDateTime($today->year, $today->month, $today->day, $date[0], $date[1]);
+                            $dateOfGame->addDay();
+
+                            $match->date_of_game = $dateOfGame;
+                        } else {
+                            // it is "dnes"
+                            $match->date_of_game = str_replace('DNES', "", $match->date_of_game);
+                            $date = explode(":", $match->date_of_game);
+
+                            $dateOfGame = new Carbon();
+                            $dateOfGame->setDateTime($today->year, $today->month, $today->day, $date[0], $date[1]);
+
+                            $match->date_of_game = $dateOfGame;
+                        }
+
+                        $match->unique_name = $match->name . ":" . $match->date_of_game->getTimestamp();
+                        // remove more than 2 spaces
+                        $match->unique_name = preg_replace("/\s\s+/", "", $match->unique_name);
+                        $match->unique_name = preg_replace("/\s/", "_", $match->unique_name);
+
+                        // first betting provider
+                        $match->betting_provider_id = BettingProvider::FIRST_PROVIDER_F;
+
+                        $match->save();
+
+                        $bets = $game->find(".market", 0)->children();
+                        foreach ($bets as $key => $bet) {
+
+                            $matchBet = new MatchBet();
+                            $matchBet->name = trim($bet->find("span[class=tip]", 0)->plaintext);
+                            $matchBet->value = trim($bet->find("span[class=odd]", 0)->plaintext);
+
+                            $matchBet->datainfo = trim($bet->getAttribute("data-info"));
+                            $matchBet->dataodd = trim($bet->getAttribute("data-odd"));
+
+                            $match->getMatchBets()->save($matchBet);
+                        }
+
+                        $matchBetsCount = $match->getMatchBets()->count();
+
+                        if ($matchBetsCount == 5) {
+                            $match->type = "normal";
+                        }
+                        if ($matchBetsCount == 4) {
+                            $match->type = "weird";
+                        }
+                        if ($matchBetsCount == 3) {
+                            $match->type = "simple";
+                        }
+                        if ($matchBetsCount == 2) {
+                            $match->type = "goldengame";
+                        }
+                        if ($matchBetsCount == 1) {
+                            $match->type = "single";
+                        }
+
+                        // we do not want single game types and weird types anymore
+                        if ($match->type == "weird" || $match->type == "single" || is_null($match->teama) || is_null($match->teamb)) {
+                            $match->delete();
+                            $this->crawlCommand->info("Parsed but deleted " . $match->type . " game type for " . $match->unique_id);
+                        } else {
+                            $match->save();
+                            $this->crawlCommand->info("Parsed and added game " . $match->unique_id);
+                        }
+
+                    } catch (\Throwable $e) {
+
+                        if (env("SENTRY_LARAVEL_SHOULD_REPORT")) {
+                            $client = new \Raven_Client(env("SENTRY_LARAVEL_DSN"));
+                            $client->captureException($e);
+                        }
+
+                        // just ignore this match and go on
                         continue;
                     }
-
-                    $match->category = $group->find("h3[class=title]", 0);
-                    if (!is_null($match->category)) {
-                        $match->category = $match->category->plaintext;
-                        $match->category = trim(str_replace("\t", "", $match->category));
-                    } else {
-                        $match->category = "-";
-                    }
-
-                    $match->name = trim($game->find("div[class=name]", 0)->plaintext);
-                    $match->name = preg_replace("/\s\s+/", "", $match->name);
-
-
-                    $teams = explode("&times;", $match->name);
-                    if (count($teams) > 1) {
-                        $match->teama = trim($teams[0]);
-                        // perform check for team a if it has (F)
-                        $match->teama = trim( str_replace("F()", "", $match->teama) );
-                        $match->teamb = trim($teams[1]);
-                    }
-                    $match->name = $match->teama . " vs " . $match->teamb;
-
-                    $today = new Carbon();
-                    $match->created_at = $today;
-
-                    $match->date_of_game = $game->find("div[class=date]", 0)->plaintext;
-
-                    if (strpos($match->date_of_game, 'DNES') === false) {
-                        // it is "zajtra"
-                        $match->date_of_game = str_replace('ZAJTRA', "", $match->date_of_game);
-                        $date = explode(":", $match->date_of_game);
-
-                        $dateOfGame = new Carbon();
-                        $dateOfGame->setDateTime($today->year, $today->month, $today->day, $date[0], $date[1]);
-                        $dateOfGame->addDay();
-
-                        $match->date_of_game = $dateOfGame;
-                    } else {
-                        // it is "dnes"
-                        $match->date_of_game = str_replace('DNES', "", $match->date_of_game);
-                        $date = explode(":", $match->date_of_game);
-
-                        $dateOfGame = new Carbon();
-                        $dateOfGame->setDateTime($today->year, $today->month, $today->day, $date[0], $date[1]);
-
-                        $match->date_of_game = $dateOfGame;
-                    }
-
-                    $match->unique_name = $match->name . ":" . $match->date_of_game->getTimestamp();
-                    // remove more than 2 spaces
-                    $match->unique_name = preg_replace("/\s\s+/", "", $match->unique_name);
-                    $match->unique_name = preg_replace("/\s/", "_", $match->unique_name);
-
-                    // first betting provider
-                    $match->betting_provider_id = BettingProvider::FIRST_PROVIDER_F;
-
-                    $match->save();
-
-                    $bets = $game->find(".market", 0)->children();
-                    foreach ($bets as $key => $bet) {
-
-                        $matchBet = new MatchBet();
-                        $matchBet->name = trim($bet->find("span[class=tip]", 0)->plaintext);
-                        $matchBet->value = trim($bet->find("span[class=odd]", 0)->plaintext);
-
-                        $matchBet->datainfo = trim($bet->getAttribute("data-info"));
-                        $matchBet->dataodd = trim($bet->getAttribute("data-odd"));
-
-                        $match->getMatchBets()->save($matchBet);
-                    }
-
-                    $matchBetsCount = $match->getMatchBets()->count();
-
-                    if ($matchBetsCount == 5) {
-                        $match->type = "normal";
-                    }
-                    if ($matchBetsCount == 4) {
-                        $match->type = "weird";
-                    }
-                    if ($matchBetsCount == 3) {
-                        $match->type = "simple";
-                    }
-                    if ($matchBetsCount == 2) {
-                        $match->type = "goldengame";
-                    }
-                    if ($matchBetsCount == 1) {
-                        $match->type = "single";
-                    }
-
-                    // we do not want single game types and weird types anymore
-                    if ($match->type == "weird" || $match->type == "single" || is_null($match->teama) || is_null($match->teamb)) {
-                        $match->delete();
-                        $this->crawlCommand->info("Parsed but deleted " . $match->type .  " game type for " . $match->unique_id);
-                    } else {
-                        $match->save();
-                        $this->crawlCommand->info("Parsed and added game " . $match->unique_id);
-                    }
-
 
                 }
             }

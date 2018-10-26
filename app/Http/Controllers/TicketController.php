@@ -137,10 +137,10 @@ class TicketController extends Controller
                 ->setCallback(function ($val, $row) {
 
                     $alink = null;
-                    if ($row->getSrc()->ticket()->first()->match()->first()->betting_provider_id == BettingProvider::FIRST_PROVIDER_F) {
-                        $alink = " <a href='" . $row->getSrc()->getLinkToBettingSite() . "' target='_blank'><img width='25px' src='images/logo.png'> </a> ";
+                    if ($row->getSrc()->ticket->match->betting_provider_id == BettingProvider::FIRST_PROVIDER_F) {
+                        $alink = " <a href='" . $row->getSrc()->getLinkToBettingSite($row->getSrc()->ticket->match->betting_provider_id) . "' target='_blank'><img width='25px' src='images/logo.png'> </a> ";
                     } elseif ($row->getSrc()->ticket()->first()->match()->first()->betting_provider_id == BettingProvider::SECOND_PROVIDER_N) {
-                        $alink = " <a href='" . $row->getSrc()->getLinkToBettingSite() . "' target='_blank'><img width='25px' src='images/logo2.jpg'> </a> ";
+                        $alink = " <a href='" . $row->getSrc()->getLinkToBettingSite($row->getSrc()->ticket->match->betting_provider_id) . "' target='_blank'><img width='25px' src='images/logo2.jpg'> </a> ";
                     }
 
                     return $alink;
