@@ -33,6 +33,7 @@ class User extends Authenticatable
      * Approve given tickets for given bettingProviderID
      * @param $tickets
      * @param $bettingProviderID
+     * @throws \Exception
      */
     public function approveTickets($tickets, $bettingProviderID) {
 
@@ -126,7 +127,7 @@ class User extends Authenticatable
                         $userTicket->bet_amount = $userSettings->bet_amount;
                     } else {
                         $marcingaleUserTicket = MarcingaleUserTicket::createContinuousMarcingaleUserTicket($this, $shouldWeCreateNewMarcingaleTicketRound);
-                        $userTicket->bet_amount = MarcingaleUserTicket::getBetAmountForContinuousMarcingaleUserTicket($shouldWeCreateNewMarcingaleTicketRound, $marcingaleUserTicket->level);
+                        $userTicket->bet_amount = MarcingaleUserTicket::getBetAmountForContinuousMarcingaleUserTicket($shouldWeCreateNewMarcingaleTicketRound, $marcingaleUserTicket->level, $bettingProviderID);
                     }
 
                 } else {
@@ -135,8 +136,9 @@ class User extends Authenticatable
 
                 // does user still have credit
                 if (BC::comp($credit, $userTicket->bet_amount, 2) < 0) {
-                    event(new UserLogEvent("Unable to create marcingale bet. User credit " . $credit . " too low for bet " . $userTicket->bet_amount, $this->id));
-                    continue;
+                    event(new UserLogEvent("Unable to create marcingale bet. User credit " . $credit . " too low for bet " . $userTicket->bet_amount . ".
+                        Terminating betting.", $this->id));
+                    return;
                 }
 
                 $userTicket->bet_rate = $ticket->matchbet->value;
@@ -183,7 +185,7 @@ class User extends Authenticatable
 
             $user = new \App\Services\User\User($this);
             if (!$user->login($this, $bettingProviderID)) {
-                event(new UserLogEvent("Failed login while updating credit", $this->id));
+                event(new UserLogEvent("Failed login while updating credit for betting provider: " . $bettingProviderID, $this->id));
                 return;
             }
 
@@ -206,7 +208,7 @@ class User extends Authenticatable
 
             $user = new \App\Services\User\User($this);
             if (!$user->login($this, $bettingProviderID)) {
-                event(new UserLogEvent("Failed login while updating credit", $this->id));
+                event(new UserLogEvent("Failed login while updating credit for betting provider: " . $bettingProviderID, $this->id));
                 return;
             }
 

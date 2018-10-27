@@ -60,21 +60,15 @@ class UserTicket extends Model
      */
     public function bet() {
 
+        // for local environment, don't bet for real
         if (env("APP_ENV") == "local") {
             $this->lamebet();
             return;
         }
 
-        // first insert into basket
-        $user = new \App\Services\User\User($this->user);
-        if (!$user->login()) {
-            event(new UserLogEvent("Failed login while betting UserTicket with ID: " . $this->id, $this->user->id, $this->id));
-            return;
-        }
-
         // lets surround all bet logic in try catch
         try {
-            $this->realbet($user);
+            $this->realbet();
         } catch(\Throwable $e) {
 
             event(new UserLogEvent("Failed bet for the first time while betting UserTicket with ID: " . $this->id . " Exception: " . $e->getMessage(), $this->user->id, $this->id));
@@ -84,9 +78,9 @@ class UserTicket extends Model
 
                 // and try ONLY if it failed before bet POST request which would set status to "bet"
                 if ($this->status != "bet") {
-                    $this->realbet($user);
+                    $this->realbet();
                 } else {
-                    event(new UserLogEvent("Failed bet for the second time while betting UserTicket with ID: " . $this->id . " but bet was sucessfuly placed!", $this->user->id));
+                    event(new UserLogEvent("Failed bet for the second time while betting UserTicket with ID: " . $this->id . " but bet was successfully placed!", $this->user->id));
                 }
             } catch(\Throwable $e) {
                 event(new UserLogEvent("Failed bet for the second time while betting UserTicket with ID: " . $this->id . " Exception: " . $e->getMessage(), $this->user->id, $this->id));
@@ -99,76 +93,106 @@ class UserTicket extends Model
         }
     }
 
-    private function realbet($user) {
+    /**
+     * Perform a real bet baby!
+     */
+    private function realbet() {
 
+        $bettingProviderID = $this->ticket->match->betting_provider_id;
         $now = Carbon::now()->getTimestamp();
-        $guzzleClient = $user->getUserGuzzle();
 
-        // clear ticket & have fresh one
-        $guzzleClient->get(env("BASE_TICKET_CLEAR_URL") . $now);
-
-        // add to basket
-        $res = $guzzleClient->get(env("BASE_BET_URL") . $this->ticket->matchbet->datainfo . "&tip_id=" . $this->ticket->matchbet->dataodd . "&value=" . trim($this->bet_rate) . "&kind=MAIN&_ts=" . $now);
-
-        // lets check if there is not error
-        $body = $res->getBody()->getContents();
-        $exists = strpos($body, "errors");
-        // there is error!
-        if ($exists !== false) {
-            $this->status = "canceled";
-            $this->save();
-
-            event(new UserLogEvent("Failed bet of UserTicket with ID: " . $this->id . " for game type: " . $this->ticket->game_type .
-                "Add to basket failed with error: ". json_encode($body)
-                , $this->user->id, $this->id));
-
+        // lets try to login user and have him prepared for betting
+        $user = new \App\Services\User\User();
+        if (!$user->login($this->user, $bettingProviderID)) {
+            event(new UserLogEvent("Failed login while betting UserTicket with ID: " . $this->id . " for betting provider: " . $bettingProviderID, $this->user->id, $this->id));
             return;
         }
+        $guzzleClient = $user->getGuzzleForUserAndBP($this->user, $bettingProviderID);
 
-        // here we can do check if we have 1 number in #fixed-ticket-link span.value -> plaintext
-//        $result = $guzzleClient->get(env("BASE_TODAY_GROUPS_URL"));
 
-        // set stake and reset $now
-        $now = Carbon::now()->getTimestamp();
-        $guzzleClient->get(env("BASE_SET_STAKE_URL") . "&_ts=" . $now . "&stake=" . trim($this->bet_amount));
+        //
+        if ($bettingProviderID == BettingProvider::FIRST_PROVIDER_F) {
 
-        // get ticket
-        $bettingTicket = $guzzleClient->get(env("BASE_TICKET_URL") . $now);
+            // clear ticket & have fresh one
+            $guzzleClient->get(env("BASE_TICKET_CLEAR_URL") . $now);
 
-        $bettingTicketResponse = $bettingTicket->getBody()->getContents();
+            // add to basket
+            $res = $guzzleClient->get(env("BASE_BET_URL") . $this->ticket->matchbet->datainfo . "&tip_id=" . $this->ticket->matchbet->dataodd . "&value=" . trim($this->bet_rate) . "&kind=MAIN&_ts=" . $now);
 
-        $tiketresponse = str_replace("\\n", "", $bettingTicketResponse);
-        preg_match("/&transaction_id=(.*?)\"/", $tiketresponse, $matches);
+            // lets check if there is not error
+            $body = $res->getBody()->getContents();
+            $exists = strpos($body, "errors");
+            // there is error!
+            if ($exists !== false) {
+                $this->status = "canceled";
+                $this->save();
 
-        $transactionID = $matches[1];
+                event(new UserLogEvent("Failed bet of UserTicket with ID: " . $this->id . " for game type: " . $this->ticket->game_type .
+                    "Add to basket failed with error: ". json_encode($body)
+                    , $this->user->id, $this->id));
 
-        $data = [
-            "form_params" => [
-                "kind" => "MAIN",
-                "transaction_id" => $transactionID
-            ]
-        ];
+                return;
+            }
 
-        // BOOM BET
-        $guzzleClient->post(env("BASE_TICKET_SUBMIT_URL") . $now, $data);
+            // set stake and reset $now
+            $now = Carbon::now()->getTimestamp();
+            $guzzleClient->get(env("BASE_SET_STAKE_URL") . "&_ts=" . $now . "&stake=" . trim($this->bet_amount));
 
-        // after successfull post request we should have this ticket bet
-        $this->status = "bet";
+            // get ticket
+            $bettingTicket = $guzzleClient->get(env("BASE_TICKET_URL") . $now);
 
-        // after bet we take a first ticket from tickets and set it to ticket as external link
-        $ticketSummary = $guzzleClient->get(env("BASE_TICKET_SUMMARY"));
+            $bettingTicketResponse = $bettingTicket->getBody()->getContents();
 
-        $ticketSummaryHtml = HtmlDomParser::str_get_html($ticketSummary->getBody()->getContents());
-        $lastTicket = $ticketSummaryHtml->find("div[id=ticket-list]", 0)->children()[1];
-        $externalTicketID = $lastTicket->getAttribute("href");
+            $tiketresponse = str_replace("\\n", "", $bettingTicketResponse);
+            preg_match("/&transaction_id=(.*?)\"/", $tiketresponse, $matches);
 
-        preg_match("/ticket_id=(.*?)kind=MAIN/", $externalTicketID, $results);
+            $transactionID = $matches[1];
 
-        $this->external_ticket_id = $results[1];
+            $data = [
+                "form_params" => [
+                    "kind" => "MAIN",
+                    "transaction_id" => $transactionID
+                ]
+            ];
 
-        $this->save();
+            // BOOM BET
+            $guzzleClient->post(env("BASE_TICKET_SUBMIT_URL") . $now, $data);
 
-        event(new UserLogEvent("Successful bet of UserTicket with ID: " . $this->id . " for game type: " . $this->ticket->game_type, $this->user->id, $this->id));
+            // after successfull post request we should have this ticket bet
+            $this->status = "bet";
+
+            // after bet we take a first ticket from tickets and set it to ticket as external link
+            $ticketSummary = $guzzleClient->get(env("BASE_TICKET_SUMMARY"));
+
+            $ticketSummaryHtml = HtmlDomParser::str_get_html($ticketSummary->getBody()->getContents());
+            $lastTicket = $ticketSummaryHtml->find("div[id=ticket-list]", 0)->children()[1];
+            $externalTicketID = $lastTicket->getAttribute("href");
+
+            // by this check we can check if bet was successful, $externalTicketID will always be unique
+            $externalTicketExists = UserTicket::where("external_ticket_id", $externalTicketID)->first();
+            if (!is_null($externalTicketExists)) {
+                $this->status = "approved";
+                $this->save();
+
+                throw new \Exception("Ticket already exists, probably failed bet for UserTicket: " . $this->id);
+            }
+
+
+            preg_match("/ticket_id=(.*?)kind=MAIN/", $externalTicketID, $results);
+
+            $this->external_ticket_id = $results[1];
+
+            $this->save();
+
+            event(new UserLogEvent("Successful bet of UserTicket with ID: " . $this->id . " for game type: " . $this->ticket->game_type, $this->user->id, $this->id));
+
+        } elseif ($bettingProviderID == BettingProvider::SECOND_PROVIDER_N) {
+
+
+
+
+        }
+
     }
 
     private function lamebet() {
@@ -180,6 +204,9 @@ class UserTicket extends Model
     }
 
 
+    /**
+     * Try to check if user ticket is already finished
+     */
     public function tryToCheckResult() {
 
         $bettingProviderID = $this->ticket->match->betting_provider_id;
@@ -272,7 +299,7 @@ class UserTicket extends Model
     }
 
     /**
-     * Return ticketdata from betting site
+     * Return ticket data from betting site
      */
     private function getTicketData() {
 

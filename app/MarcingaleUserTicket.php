@@ -3,7 +3,6 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
 
 class MarcingaleUserTicket extends Model
 {
@@ -26,12 +25,12 @@ class MarcingaleUserTicket extends Model
     }
 
     /**
-     * This function just returns true if new marcingale ticket round should start
-     * Or returns marcingale ticket round that should be continued
+     * This function just returns true if new marcingale user round should start
+     * Or returns marcingale user round that should be continued
      * @param $user
-     * @return boolean
-     * @return MarcingaleUserRound
-     * @throws Exception
+     * @param $bettingProviderID
+     * @return bool
+     * @throws \Exception
      */
     public static function shouldWeCreateNewMarcingaleUserRound($user, $bettingProviderID) {
 
@@ -55,6 +54,12 @@ class MarcingaleUserTicket extends Model
             ->orderBy("created_at", "DESC")
             ->first();
 
+            // if marcingale user round does not have any marcingale user ticket
+            // lets continue with this marcingale user round
+            if (is_null($marcingaleUserTicket)) {
+                return $marUserRound;
+            }
+
             // and lets find out if by any chance was not user ticket either:
             // a) canceled by some error so we have to continue with the marcingale
             // b) or it was bet and done and since we have only open rounds, this must be failed
@@ -71,6 +76,13 @@ class MarcingaleUserTicket extends Model
         return true;
     }
 
+    /**
+     * This function creates fresh marcingale user round
+     * and creates its first marcingaleUserTicket
+     * @param $user
+     * @param $bettingProviderID
+     * @return MarcingaleUserTicket
+     */
     public static function createFreshMarcingaleUserRound($user, $bettingProviderID) {
 
         $marcingaleUserRound = new MarcingaleUserRound();
@@ -106,11 +118,17 @@ class MarcingaleUserTicket extends Model
         return $marcingaleUserTicket;
     }
 
-    public static function getBetAmountForContinuousMarcingaleUserTicket(MarcingaleUserRound $marRound, $level) {
+    public static function getBetAmountForContinuousMarcingaleUserTicket(MarcingaleUserRound $marRound, $level, $bettingProviderID) {
 
-        $startedAmountOfThisRound = $marRound->getMarcingaleUserTickets()->get()->last()->userTicket->bet_amount;
+        $startedAmountOfThisRound = $marRound->getMarcingaleUserTickets()->get()->last();
 
-        $betAmount = $startedAmountOfThisRound;
+        // did we even started?
+        if (is_null($startedAmountOfThisRound)) {
+            // if not, return just bet_amount from settings
+            return $marRound->user->getSettings($bettingProviderID)->bet_amount;
+        }
+
+        $betAmount = $startedAmountOfThisRound->userTicket->bet_amount;
         for ($i = 1; $i < $level; $i++) {
             $betAmount = bcmul($betAmount, 2, 2);
         }
