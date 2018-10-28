@@ -26,6 +26,7 @@ class TicketsApproveCommand extends Command
         $tickets = Ticket::select(["tickets.*", "matches.date_of_game"])
             ->join('matches', 'matches.id', '=', 'tickets.match_id')
             ->where("status", "=", "prepared")
+            ->where("game_type", "<>", "marcingale-custom")
             ->where('date_of_game', '>=', Carbon::now()->addMinutes(15)->format("Y-m-d H:i:s"))
             ->orderBy("date_of_game", "asc");
 
