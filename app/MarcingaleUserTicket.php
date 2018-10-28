@@ -54,6 +54,12 @@ class MarcingaleUserTicket extends Model
             ->orderBy("created_at", "DESC")
             ->first();
 
+            // if marcingale user round does not have any marcingale user ticket
+            // lets continue with this marcingale user round
+            if (is_null($marcingaleUserTicket)) {
+                return $marUserRound;
+            }
+
             // and lets find out if by any chance was not user ticket either:
             // a) canceled by some error so we have to continue with the marcingale
             // b) or it was bet and done and since we have only open rounds, this must be failed
@@ -106,9 +112,14 @@ class MarcingaleUserTicket extends Model
 
     public static function getBetAmountForContinuousUserTicket(MarcingaleUserRound $marRound, $level) {
 
-        $startedAmountOfThisRound = $marRound->getMarcingaleUserTickets()->get()->last()->userTicket()->first()->bet_amount;
+        $startedAmountOfThisRound = $marRound->getMarcingaleUserTickets()->get()->last();
+        // did we even started?
+        if (is_null($startedAmountOfThisRound)) {
+            // if not, return just bet_amount from settings
+            return $marRound->user->getSettings()->first()->bet_amount;
+        }
 
-        $betAmount = $startedAmountOfThisRound;
+        $betAmount = $startedAmountOfThisRound->userTicket->bet_amount;
         for ($i = 1; $i < $level; $i++) {
             $betAmount = bcmul($betAmount, 2, 2);
         }
