@@ -113,15 +113,16 @@ class User
      * @param $bettingProviderID
      * @return Client
      */
-    public function getGuzzleForUserAndBP(\App\User $userEntity, $bettingProviderID) {
+    public function getGuzzleForUserAndBP(\App\User $userEntity, $bettingProviderID, $additionalHeaders = []) {
 
         // prepare users cookieJar
         $cookieJar = new FileCookieJar("cookie_jar_user_id_" . $userEntity->id . "_betting_provider_" . $bettingProviderID . ".txt", TRUE);
         // get user header
-        $header = $userEntity->getHeader($bettingProviderID);
+        $header = array_merge($userEntity->getHeader($bettingProviderID), $additionalHeaders);
 
         // return prepared Guzzle client
         return new Client([
+            "http_errors" => false,
             'headers' => $header,
             "cookies" => $cookieJar,
             'allow_redirects' => false

@@ -28,14 +28,13 @@ class TicketsBetCommand extends Command
         foreach ($bettingProviders as $bP) {
 
             // is betting provider enabled
-            if (BettingProvider::isEnabled($bP->id)) {
+            if (!BettingProvider::isEnabled($bP->id)) {
                 continue;
             }
 
             // for all authorized users
-            $users = User::all()
-                ->where("is_authorized", "=", "1");
-            foreach ($users as $user) {
+            $users = User::where("is_authorized", "=", "1");
+            foreach ($users->get() as $user) {
 
                 // check if this user has this betting provider active
                 if (!Settings::isBettingProviderEnabled($user->id, $bP->id)) {
@@ -52,10 +51,10 @@ class TicketsBetCommand extends Command
                     });
 
                 // bet them baby
-                foreach ($userTickets as $userTicket) {
+                foreach ($userTickets->get() as $userTicket) {
                     $userTicket->bet($this);
 
-//                    sleep(rand(10,20));
+                    sleep(rand(10,20));
                 }
 
                 // in the end update credit

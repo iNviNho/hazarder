@@ -166,7 +166,7 @@ class CrawlerSecond implements Crawlable
                 // more participants than we support, skip
                 continue;
             }
-            $match->date_of_game = Carbon::createFromTimeString($bet->expirationTime)->addHours(2);
+            $match->date_of_game = Carbon::createFromTimeString($bet->expirationTime, "UTC")->setTimezone(env("APP_TIMEZONE"));
             $match->unique_name = $bet->participantOrder . $bet->betId;
             $match->sport = mb_strtolower($betBox->subtitle);
 
@@ -207,6 +207,9 @@ class CrawlerSecond implements Crawlable
     public function updateMatch($match, $bet) {
 
         $ourMatch = Match::where("unique_id", "=", $match->unique_id)->first();
+
+        $ourMatch->date_of_game = Carbon::createFromTimeString($bet->expirationTime, "UTC")->setTimezone(env("APP_TIMEZONE"));
+        $ourMatch->save();
 
         // define matchbetsCount
         $matchBetsCount = 0;

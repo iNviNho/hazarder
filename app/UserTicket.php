@@ -5,6 +5,7 @@ namespace App;
 use App\Events\UserLogEvent;
 use BCMathExtended\BC;
 use Carbon\Carbon;
+use GuzzleHttp\RequestOptions;
 use Illuminate\Database\Eloquent\Model;
 use Sunra\PhpSimple\HtmlDomParser;
 
@@ -104,13 +105,17 @@ class UserTicket extends Model
         // lets try to login user and have him prepared for betting
         $user = new \App\Services\User\User();
         if (!$user->login($this->user, $bettingProviderID)) {
-            event(new UserLogEvent("Failed login while betting UserTicket with ID: " . $this->id . " for betting provider: " . $bettingProviderID, $this->user->id, $this->id));
-            return;
+            // one more time
+            if (!$user->login($this->user, $bettingProviderID)) {
+                event(new UserLogEvent("Failed login while betting UserTicket with ID: " . $this->id . " for betting provider: " . $bettingProviderID, $this->user->id, $this->id));
+                return;
+            }
+
         }
         $guzzleClient = $user->getGuzzleForUserAndBP($this->user, $bettingProviderID);
 
 
-        //
+        // different betting tactic for different betting provider
         if ($bettingProviderID == BettingProvider::FIRST_PROVIDER_F) {
 
             // clear ticket & have fresh one
@@ -188,8 +193,118 @@ class UserTicket extends Model
 
         } elseif ($bettingProviderID == BettingProvider::SECOND_PROVIDER_N) {
 
+            // get guzzle for betting
+            $guzzleClient = $user->getGuzzleForUserAndBP($this->user, $bettingProviderID, [
+                "Connection" => "keep-alive",
+                "Host" => "www.nike.sk",
+                "Origin" => "https://www.nike.sk",
+                "Referer" => "https://www.nike.sk/",
+                "X-Requested-With" => "XMLHttpRequest",
+            ]);
+
+            // 1 clear basket
+            $response = $guzzleClient->post(env("BASE_BET_URL_SECOND_PROVIDER"), [
+                RequestOptions::JSON => [
+                    "ClearBetslip", 0, new \stdClass()
+                ]
+            ]);
+            $error = json_decode($response->getBody()->getContents())->lastCmdError;
+            if ( !is_null($error)) {
+                throw new \Exception("Clear basket failed with error: " . json_encode($error));
+            }
+
+            // 2 is basket empty?
+            $response = $guzzleClient->post(env("BASE_BET_URL_SECOND_PROVIDER"), [
+                RequestOptions::JSON => [
+                    "ReadBetslips", null, new \stdClass()
+                ]
+            ]);
+            $error = (array) json_decode($response->getBody()->__toString())->betslip->groups;
+            if ( !empty($error)) {
+                throw new \Exception("Basket is not empty. Cannot proceed. " . json_encode($error));
+            }
+
+            // 3 add to basket
+            $basketData = new \stdClass();
+            $basketData->betId = "p" . $this->ticket->match->unique_id;
+            $basketData->infoNumber = $this->ticket->match->number;
+            $basketData->odds = "1.94";
+            $basketData->origin = "fullTextSearchSuggestions";
+            $basketData->selectionCode = $this->ticket->matchbet->datainfo;
+
+            $response = $guzzleClient->post(env("BASE_BET_URL_SECOND_PROVIDER"), [
+                RequestOptions::JSON => [
+                    "AddPick", 0, $basketData
+                ]
+            ]);
+            $error = json_decode($response->getBody()->getContents())->lastCmdError;
+            if ( !is_null($error)) {
+                throw new \Exception("Add to basket failed with error: " . json_encode($error));
+            }
+
+            // 4 set stake
+            $changeOverallMoneyStake = new \stdClass();
+            $changeOverallMoneyStake->amount = BC::convertScientificNotationToString($this->bet_amount);
+            $response = $guzzleClient->post(env("BASE_BET_URL_SECOND_PROVIDER"), [
+                RequestOptions::JSON => [
+                    "ChangeOverallMoneyStake", 0, $changeOverallMoneyStake
+                ]
+            ]);
+
+            $error = json_decode($response->getBody()->getContents())->lastCmdError;
+            if ( !is_null($error)) {
+                throw new \Exception("Set stake failed: " . json_encode($error));
+            }
 
 
+            // 5 BOOM BET !!!
+            $response = $guzzleClient->post(env("BASE_BET_URL_SECOND_PROVIDER"), [
+                RequestOptions::JSON => [
+                    "PlaceBet", 0, new \stdClass(),
+                ]
+            ]);
+            $error = json_decode($response->getBody()->getContents())->lastCmdError;
+            if ( !is_null($error)) {
+                throw new \Exception("BET failed: " . json_encode($error));
+            }
+
+            if ( !is_null($error)) {
+                throw new \Exception("Bet failed with error: " . json_encode($error));
+            } else {
+
+                // reset guzzle
+                $guzzleClient = $user->getGuzzleForUserAndBP($this->user, $bettingProviderID, [
+                    "Connection" => "keep-alive",
+                    "Host" => "www.nike.sk",
+                    "Origin" => "https://www.nike.sk",
+                    "Referer" => "https://www.nike.sk/"
+                ]);
+
+                // 6 get security token
+                $response = $guzzleClient->get(env("BASE_GET_SECURITY_TOKEN_SECOND_PROVIDER"));
+                $securityToken = $response->getBody()->getContents();
+
+                // 7 get hash of game
+                $response = $guzzleClient->get(env("BASE_TICKET_SUMMARY_SECOND_PROVIDER") . $securityToken);
+                $hash = json_decode($response->getBody()->getContents())->data[0]->hash;
+
+                // by this check we can check if bet was successful, $externalTicketID will always be unique
+                $externalTicketExists = UserTicket::where("external_ticket_id", $hash)->first();
+                if (!is_null($externalTicketExists)) {
+                    $this->status = "approved";
+                    $this->save();
+
+                    throw new \Exception("Ticket already exists, probably failed bet for UserTicket: " . $this->id);
+                }
+
+                // done
+                $this->status = "bet";
+                $this->external_ticket_id = $hash;
+
+                $this->save();
+
+                event(new UserLogEvent("Successful bet of UserTicket with ID: " . $this->id . " for game type: " . $this->ticket->game_type, $this->user->id, $this->id));
+            }
 
         }
 

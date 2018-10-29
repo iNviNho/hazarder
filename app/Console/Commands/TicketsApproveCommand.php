@@ -41,10 +41,9 @@ class TicketsApproveCommand extends Command
                 ->where('date_of_game', '>=', Carbon::now()->addMinutes(15)->format("Y-m-d H:i:s"))
                 ->orderBy("date_of_game", "asc");
 
-            $users = User::all()
-                ->where("is_authorized", "=", "1");
+            $users = User::where("is_authorized", "=", "1");
 
-            foreach ($users as $user) {
+            foreach ($users->get() as $user) {
 
                 // check if this user has this betting provider active
                 if (!Settings::isBettingProviderEnabled($user->id, $bP->id)) {
