@@ -6,13 +6,11 @@
             <div class="col-md-12">
 
                 <div class="basic-content">
-                    <h1>Matches</h1>
-
+                    <h4>Matches</h4>
                     <div>
                         {!! $grid->render() !!}
                     </div>
                 </div>
-
 
             </div>
         </div>

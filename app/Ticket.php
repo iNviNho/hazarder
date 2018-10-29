@@ -57,7 +57,7 @@ class Ticket extends Model
 
             // type of marcingale
             // if $rate >= 1.9 && $rate <= 2.11
-            if (bccomp($rate, "1.89", 2) == 1 && bccomp($rate, "2.11", 2) == -1) {
+            if (bccomp($rate, "1.89", 2) == 1 && bccomp($rate, "2.05", 2) == -1) {
                 $game_type = "marcingale";
             }
 
@@ -158,7 +158,7 @@ class Ticket extends Model
      * @param $gameType
      * @return Ticket|bool
      */
-    private static function createAndInsertTicket($match, $matchBet, $status, $result, $gameType) {
+    public static function createAndInsertTicket($match, $matchBet, $status, $result, $gameType, $byPassChecks = false) {
 
         $ticket = new Ticket();
 
@@ -170,7 +170,7 @@ class Ticket extends Model
         }
 
         // do we already have ticket for this game?
-        if (TicketService::ticketForMatchAlreadyExists($match->id)) {
+        if (TicketService::ticketForMatchAlreadyExists($match->id) && !$byPassChecks) {
 
             // is it the same one?
             if (TicketService::ticketForMatchAndMatchBetAlreadyExists($match->id, $ticket->matchbet_id)) {

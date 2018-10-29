@@ -52,7 +52,7 @@
                                     </tr>
                                 </table>
                                 @if ($gameTypeName == "marcingale")
-                                    <a href="/dashboard/marcingale/detailed" class="btn btn-primary">MARCINGALE DETAILED STATISTICS</a>
+                                    <a href="/dashboard/marcingale/detailed" class="btn btn-primary">MARCINGALE DETAILED</a>
                                 @endif
                             </div>
                         </div>

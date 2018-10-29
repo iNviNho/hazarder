@@ -26,6 +26,20 @@ class UserTicket extends Model
         return $this->belongsTo('App\User');
     }
 
+    public function getLinkToBettingSite() {
+
+        $externalTicketId = $this->external_ticket_id;
+
+        // some weird pattern replace
+        $externalTicketId = str_replace("%2F", "_", $externalTicketId);
+        $externalTicketId = str_replace("%2B", "-", $externalTicketId);
+        
+
+        $link = env("BASE_TICKET_SHOW") . $externalTicketId . "kind=MAIN";
+
+        return $link;
+    }
+
     /**
      * Lets bet this ticket
      */
@@ -133,6 +147,14 @@ class UserTicket extends Model
         $lastTicket = $ticketSummaryHtml->find("div[id=ticket-list]", 0)->children()[1];
         $externalTicketID = $lastTicket->getAttribute("href");
 
+        // by this check we can check if bet was successful, $externalTicketID will always be unique
+        $externalTicketExists = UserTicket::where("external_ticket_id", $externalTicketID)->first();
+        if (!is_null($externalTicketExists)) {
+            $this->status = "approved";
+            $this->save();
+            throw new \Exception("Ticket already exists, probably failed bet for UserTicket: " . $this->id);
+        }
+
         preg_match("/ticket_id=(.*?)kind=MAIN/", $externalTicketID, $results);
 
         $this->external_ticket_id = $results[1];
@@ -159,7 +181,7 @@ class UserTicket extends Model
             return;
         }
 
-        $url = env("BASE_TICKET_SHOW") . $this->external_ticket_id . "&kind=MAIN";
+        $url = $this->getLinkToBettingSite();
 
         $ticketRequest = $user->getUserGuzzle()->get($url);
 
@@ -208,8 +230,10 @@ class UserTicket extends Model
             return;
         }
 
-        $url = env("BASE_TICKET_SHOW") . $this->external_ticket_id . "&kind=MAIN";
-
+        $url = $this->getLinkToBettingSite();
+        
+        event(new UserLogEvent("Starting to finalize: " . $this->id . " with this link to betting site: " . $url, $this->user->id, $this->id));
+        
         $ticketRequest = $user->getUserGuzzle()->get($url);
 
         $ticketHTML = HtmlDomParser::str_get_html($ticketRequest->getBody()->getContents());
@@ -240,7 +264,7 @@ class UserTicket extends Model
 
         $this->save();
 
-        if ($this->ticket->game_type == "marcingale") {
+        if (in_array($this->ticket->game_type, ["marcingale", "marcingale-custom"])) {
             MarcingaleUserTicket::treatBetAndDoneUserTicket($this);
         }
     }
@@ -252,7 +276,7 @@ class UserTicket extends Model
 
         $this->save();
 
-        if ($this->ticket->game_type == "marcingale") {
+        if (in_array($this->ticket->game_type, ["marcingale", "marcingale-custom"])) {
             MarcingaleUserTicket::treatBetAndDoneUserTicket($this);
         }
     }

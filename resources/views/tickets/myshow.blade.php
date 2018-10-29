@@ -6,13 +6,12 @@
             <div class="col-md-12">
 
                 <div class="basic-content">
-                    <h1>My Tickets</h1>
+                    <h4>My Tickets</h4>
 
                     <div>
                         {!! $grid->render() !!}
                     </div>
                 </div>
-
 
             </div>
         </div>
