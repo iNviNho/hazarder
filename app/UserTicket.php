@@ -30,13 +30,14 @@ class UserTicket extends Model
     /**
      * Return save link for concrete betting site
      * @param $bettingProviderID
+     * @param $humanReadable
      * @return string
      */
-    public function getLinkToBettingSite($bettingProviderID) {
+    public function getLinkToBettingSite($bettingProviderID, $humanReadable = false) {
+
+        $externalTicketId = $this->external_ticket_id;
 
         if ($bettingProviderID == BettingProvider::FIRST_PROVIDER_F) {
-
-            $externalTicketId = $this->external_ticket_id;
 
             // some weird pattern replace
             $externalTicketId = str_replace("%2F", "_", $externalTicketId);
@@ -48,9 +49,11 @@ class UserTicket extends Model
 
         } elseif ($bettingProviderID == BettingProvider::SECOND_PROVIDER_N) {
 
-            $externalTicketId = $this->external_ticket_id;
-
-            $link = env("BASE_TICKET_SHOW_SECOND_BETTING_PROVIDER") . $externalTicketId . "?lang=sk";
+            if ($humanReadable) {
+                $link = env("BASE_URL_SECOND_PROVIDER") . "/tiket/". $externalTicketId;
+            } else {
+                $link = env("BASE_TICKET_SHOW_SECOND_BETTING_PROVIDER") . $externalTicketId . "?lang=sk";
+            }
 
             return $link;
 
@@ -353,6 +356,12 @@ class UserTicket extends Model
                 $this->loose();
             } elseif ($ticketData->status == "Won") {
                 $this->win();
+            }
+
+            // check if it was not canceled by any chance
+            if ($ticketData->displayStatus == "ReturnPaidOut") {
+                $this->status = "canceled";
+                event(new UserLogEvent("Canceled UserTicket with ID: " . $this->id . " because it was suspended.", $this->user->id, $this->id));
             }
 
             // try to finalize
