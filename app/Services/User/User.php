@@ -54,6 +54,7 @@ class User
             ];
             $response = $guzzleClient->post( env("LOGIN_URL_SECOND_BETTING_PROVIDER_N"), $body);
 
+            dump($response->getStatusCode());
             $errors = json_decode($response->getBody()->getContents());
             dump($errors);
             dump($response->getBody()->__toString());
