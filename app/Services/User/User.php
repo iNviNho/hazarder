@@ -55,6 +55,8 @@ class User
             $response = $guzzleClient->post( env("LOGIN_URL_SECOND_BETTING_PROVIDER_N"), $body);
 
             $errors = json_decode($response->getBody()->getContents());
+            dump($errors);
+            dump($response->getBody()->__toString());
             if (property_exists($errors, "errors")) {
                 dump($errors->errors);
                 return false;
