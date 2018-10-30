@@ -49,17 +49,15 @@ class User
 
             //login
             dump("logging in");
-            dump(json_encode([
-                "form_params" => [
-                    "meno" => $userEntity->getSettings($bettingProviderID)->first()->username,
-                    "heslo" => $userEntity->getSettings($bettingProviderID)->first()->password,
-                ]
-            ]));
+
+            $loginParams = new \stdClass();
+            $loginParams->meno = $userEntity->getSettings($bettingProviderID)->first()->username;
+            $loginParams->heslo = $userEntity->getSettings($bettingProviderID)->first()->password;
+
+            dump($loginParams);
+
             $body = [
-                "form_params" => [
-                    "meno" => $userEntity->getSettings($bettingProviderID)->first()->username,
-                    "heslo" => $userEntity->getSettings($bettingProviderID)->first()->password,
-                ]
+                "form_params" => $loginParams
             ];
             dump("url");
             dump(env("LOGIN_URL_SECOND_BETTING_PROVIDER_N"));
@@ -67,8 +65,6 @@ class User
 
             dump($response->getStatusCode());
             $errors = json_decode($response->getBody()->getContents());
-            dump($errors);
-            dump($response->getBody()->__toString());
             if (property_exists($errors, "errors")) {
                 dump($errors->errors);
                 return false;
