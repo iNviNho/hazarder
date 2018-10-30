@@ -183,7 +183,7 @@ class User extends Authenticatable
 
         if ($bettingProviderID == BettingProvider::FIRST_PROVIDER_F) {
 
-            $user = new \App\Services\User\User($this);
+            $user = new \App\Services\User\User();
             if (!$user->login($this, $bettingProviderID)) {
                 event(new UserLogEvent("Failed login while updating credit for betting provider: " . $bettingProviderID, $this->id));
                 return;

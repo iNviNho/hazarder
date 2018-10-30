@@ -37,8 +37,8 @@ class User
             //login
             $body = [
                 RequestOptions::FORM_PARAMS => [
-                    "username" => $userEntity->getSettings($bettingProviderID)->first()->username,
-                    "password" => $userEntity->getSettings($bettingProviderID)->first()->password,
+                    "username" => $userEntity->getSettings($bettingProviderID)->username,
+                    "password" => $userEntity->getSettings($bettingProviderID)->password,
                 ]
             ];
             $guzzleClient->post( env("LOGIN_URL_FIRST_BETTING_PROVIDER_F"), $body);
@@ -51,8 +51,8 @@ class User
 
             //login
             $loginParams = new \stdClass();
-            $loginParams->meno = $userEntity->getSettings($bettingProviderID)->first()->username;
-            $loginParams->heslo = $userEntity->getSettings($bettingProviderID)->first()->password;
+            $loginParams->meno = $userEntity->getSettings($bettingProviderID)->username;
+            $loginParams->heslo = $userEntity->getSettings($bettingProviderID)->password;
 
             $body = [
                 RequestOptions::FORM_PARAMS => $loginParams
