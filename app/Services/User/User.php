@@ -11,6 +11,7 @@ namespace App\Services\User;
 use App\BettingProvider;
 use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\FileCookieJar;
+use GuzzleHttp\RequestOptions;
 
 class User
 {
@@ -35,7 +36,7 @@ class User
 
             //login
             $body = [
-                "form_params" => [
+                RequestOptions::FORM_PARAMS => [
                     "username" => $userEntity->getSettings($bettingProviderID)->first()->username,
                     "password" => $userEntity->getSettings($bettingProviderID)->first()->password,
                 ]
@@ -48,29 +49,19 @@ class User
         if ($bettingProviderID == BettingProvider::SECOND_PROVIDER_N) {
 
             //login
-            dump("logging in");
-
             $loginParams = new \stdClass();
             $loginParams->meno = $userEntity->getSettings($bettingProviderID)->first()->username;
             $loginParams->heslo = $userEntity->getSettings($bettingProviderID)->first()->password;
 
-            dump($loginParams);
-
             $body = [
-                "form_params" => $loginParams
+                RequestOptions::FORM_PARAMS => $loginParams
             ];
-            dump("url");
-            dump(env("LOGIN_URL_SECOND_BETTING_PROVIDER_N"));
             $response = $guzzleClient->post( env("LOGIN_URL_SECOND_BETTING_PROVIDER_N"), $body);
 
-            dump($response->getStatusCode());
             $errors = json_decode($response->getBody()->getContents());
             if (property_exists($errors, "errors")) {
-                dump($errors->errors);
                 return false;
             } else {
-                dump("logged in");
-                sleep(3);
                 return true;
             }
 
@@ -111,17 +102,12 @@ class User
         if ($bettingProviderID == BettingProvider::SECOND_PROVIDER_N) {
 
             try {
-                dump("Checking if user is logged in");
-                dump(env("USER_LOGGED_IN_CHECK_SECOND_BETTING_PROVIDER_N"));
                 $response = $guzzleClient->get(env("USER_LOGGED_IN_CHECK_SECOND_BETTING_PROVIDER_N"));
-
             } catch (\Throwable $e) {
                 return false;
             }
 
             // is he logged in
-            dump($response->getStatusCode());
-            dump(json_decode($response->getBody()->getContents()));
             if ($response->getStatusCode() == 200) {
                 return true;
             } else {
