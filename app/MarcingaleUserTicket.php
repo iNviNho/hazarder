@@ -3,7 +3,6 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
 
 class MarcingaleUserTicket extends Model
 {
@@ -26,19 +25,20 @@ class MarcingaleUserTicket extends Model
     }
 
     /**
-     * This function just returns true if new marcingale ticket round should started
-     * Or returns marcingale ticket round that should follow
+     * This function just returns true if new marcingale user round should start
+     * Or returns marcingale user round that should be continued
      * @param $user
-     * @return boolean
-     * @return MarcingaleUserRound
-     * @throws Exception
+     * @param $bettingProviderID
+     * @return bool
+     * @throws \Exception
      */
-    public static function shouldWeCreateNewMarcingaleTicketRound($user) {
+    public static function shouldWeCreateNewMarcingaleUserRound($user, $bettingProviderID) {
 
         // lets get every marcingale user round that is not finished = OPEN
         $marcingaleUserRounds = MarcingaleUserRound::where([
             "user_id" => $user->id,
-            "status" => "open"
+            "status" => "open",
+            "betting_provider_id" => $bettingProviderID,
         ])
         ->orderBy("created_at", "ASC")
         ->get();
@@ -63,9 +63,9 @@ class MarcingaleUserTicket extends Model
             // and lets find out if by any chance was not user ticket either:
             // a) canceled by some error so we have to continue with the marcingale
             // b) or it was bet and done and since we have only open rounds, this must be failed
-            $status = $marcingaleUserTicket->userTicket()->first()->status;
+            $status = $marcingaleUserTicket->userTicket->status;
             if ( in_array($status, ["canceled", "betanddone"]) ) {
-                if ($marcingaleUserTicket->userTicket()->first()->bet_win < 1) {
+                if ($marcingaleUserTicket->userTicket->bet_win < 1) {
                     return $marUserRound;
                 }
                 throw new \Exception("This should never happen" . json_encode($marcingaleUserTicket));
@@ -76,12 +76,20 @@ class MarcingaleUserTicket extends Model
         return true;
     }
 
-    public static function createFreshMarcingaleUserTicketRound($user) {
+    /**
+     * This function creates fresh marcingale user round
+     * and creates its first marcingaleUserTicket
+     * @param $user
+     * @param $bettingProviderID
+     * @return MarcingaleUserTicket
+     */
+    public static function createFreshMarcingaleUserRound($user, $bettingProviderID) {
 
         $marcingaleUserRound = new MarcingaleUserRound();
         $marcingaleUserRound->user_id = $user->id;
         $marcingaleUserRound->level_finished = 1;
         $marcingaleUserRound->status = "open";
+        $marcingaleUserRound->betting_provider_id = $bettingProviderID;
 
         $marcingaleUserRound->save();
 
@@ -93,7 +101,7 @@ class MarcingaleUserTicket extends Model
         return $marcingaleUserTicket;
     }
 
-    public static function createContinuousMarcingaleUserTicketRound($user, MarcingaleUserRound $marcingaleTicketRound) {
+    public static function createContinuousMarcingaleUserTicket($user, MarcingaleUserRound $marcingaleTicketRound) {
 
         $doneLevels = 0;
         foreach ($marcingaleTicketRound->getMarcingaleUserTickets()->get() as $marTicket) {
@@ -110,13 +118,14 @@ class MarcingaleUserTicket extends Model
         return $marcingaleUserTicket;
     }
 
-    public static function getBetAmountForContinuousUserTicket(MarcingaleUserRound $marRound, $level) {
+    public static function getBetAmountForContinuousMarcingaleUserTicket(MarcingaleUserRound $marRound, $level, $bettingProviderID) {
 
         $startedAmountOfThisRound = $marRound->getMarcingaleUserTickets()->get()->last();
+      
         // did we even started?
         if (is_null($startedAmountOfThisRound)) {
             // if not, return just bet_amount from settings
-            return $marRound->user->getSettings()->first()->bet_amount;
+            return $marRound->user->getSettings($bettingProviderID)->bet_amount;
         }
 
         $betAmount = $startedAmountOfThisRound->userTicket->bet_amount;

@@ -45,7 +45,7 @@
                     <strong>Hazarder</strong>
                 </a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent">
-                    <span class="fa fa-angle-down"  style="color: #FFF; font-size: 28px;"></span>
+                    <span class="fa fa-angle-down"  style="color: black; font-size: 28px;"></span>
                 </button>
 
                 <div class="collapse navbar-collapse" id="navbarSupportedContent" style="text-align: right;">
@@ -60,16 +60,7 @@
                                 <a class="nav-link" href="{{ route('register') }}">{{ __('Register') }}</a>
                             </li>
                         @else
-                            <li class="nav-item nav-item-credit" data-placement="bottom" data-toggle="tooltip"
-                                title="Last updated: {{Auth::user()->getCreditUpdateTime()->format("d.m.Y H:i")}}">{{Auth::user()->credit}}€</li>
-                            {{--<div>--}}
-                                {{--<a href="/user/update-credit" data-placement="bottom" data-toggle="tooltip"--}}
-                                   {{--title="Last updated: {{Auth::user()->getCreditUpdateTime()->format("d.m.Y H:i")}}"--}}
-                                    {{--style="padding-left: 10px;">--}}
-                                    {{--<span class="fa fa-sync" style="color: #56ddff; font-size: 18px;"></span>--}}
-                                {{--</a>--}}
-                            {{--</div>--}}
-
+                            <li class="nav-item nav-item-credit">{{Auth::user()->getCredit()}}€</li>
                             <li class="nav-item dropdown">
                                 <a style="font-size: 18px;" id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown">
                                     <strong>{{ Auth::user()->name}}</strong> <span class="caret"></span>
@@ -80,8 +71,6 @@
                                     <a class="dropdown-item" href="/my-tickets" > My Tickets</a>
 
                                     <a class="dropdown-item" href="/matches" > Matches</a>
-                                    {{--<a class="dropdown-item" href="/tickets" > Tickets</a>--}}
-                                    {{--<a class="dropdown-item" href="/dashboard" > All Statistics</a>--}}
                                     <a class="dropdown-item" href="/my-logs" > My Logs</a>
                                     <a class="dropdown-item" href="/settings" > Settings</a>
 

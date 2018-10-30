@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use Aginev\Datagrid\Datagrid;
+use App\BettingProvider;
 use App\Ticket;
 use App\UserTicket;
 use Carbon\Carbon;
@@ -135,7 +135,14 @@ class TicketController extends Controller
                 ->setName('match')
                 ->setLabel('Link')
                 ->setCallback(function ($val, $row) {
-                    $alink = " <a href='" . $row->getSrc()->getLinkToBettingSite() . "' target='_blank'><img width='25px' src='images/logo.png'> </a> ";
+
+                    $alink = null;
+                    if ($row->getSrc()->ticket->match->betting_provider_id == BettingProvider::FIRST_PROVIDER_F) {
+                        $alink = " <a href='" . $row->getSrc()->getLinkToBettingSite($row->getSrc()->ticket->match->betting_provider_id) . "' target='_blank'><img width='25px' src='images/logo.png'> </a> ";
+                    } elseif ($row->getSrc()->ticket()->first()->match()->first()->betting_provider_id == BettingProvider::SECOND_PROVIDER_N) {
+                        $alink = " <a href='" . $row->getSrc()->getLinkToBettingSite($row->getSrc()->ticket->match->betting_provider_id) . "' target='_blank'><img width='25px' src='images/logo2.jpg'> </a> ";
+                    }
+
                     return $alink;
                 }),
             (new FieldConfig())

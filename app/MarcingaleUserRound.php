@@ -14,6 +14,15 @@ class MarcingaleUserRound extends Model
     }
 
     /**
+     * Get user
+     */
+    public function user()
+    {
+        return $this->belongsTo('App\User');
+    }
+
+
+    /**
      * Get the comments for the blog post.
      */
     public function getMarcingaleUserTickets()

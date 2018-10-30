@@ -8,7 +8,8 @@
 
 namespace App\Console\Commands;
 
-use App\Services\Crawler\Crawler;
+use App\Services\Crawler\CrawlerFirst;
+use App\Services\Crawler\CrawlerSecond;
 use Illuminate\Console\Command;
 
 class CrawlCommand extends Command
@@ -21,10 +22,15 @@ class CrawlCommand extends Command
 
         try {
 
-            $crawler = new Crawler($this);
-            $crawler->crawlAndInsert();
+            $crawler = new CrawlerFirst($this);
+            $crawler->crawl();
 
-            $this->info("Crawling is DONE");
+            $this->info("Crawling of first betting provider DONE");
+
+            $crawler = new CrawlerSecond($this);
+            $crawler->crawl();
+
+            $this->info("Crawling of second betting provider DONE");
 
         } catch(\Throwable $e) {
             // we need something for logging
