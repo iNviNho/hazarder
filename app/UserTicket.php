@@ -47,7 +47,8 @@ class UserTicket extends Model
             return $link;
 
         } elseif ($bettingProviderID == BettingProvider::SECOND_PROVIDER_N) {
-          
+
+            $externalTicketId = $this->external_ticket_id;
 
             $link = env("BASE_TICKET_SHOW_SECOND_BETTING_PROVIDER") . $externalTicketId . "?lang=sk";
 
