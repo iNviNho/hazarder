@@ -66,8 +66,8 @@ class TicketsCheckResultCommand extends Command
 
                 }
 
-                $user->updateCredit($bP->id);
 
+                $user->updateCredit($bP->id);
             }
 
         }

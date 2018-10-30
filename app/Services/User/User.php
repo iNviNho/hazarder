@@ -52,7 +52,17 @@ class User
                     "heslo" => $userEntity->getSettings($bettingProviderID)->first()->password,
                 ]
             ];
-            $guzzleClient->post( env("LOGIN_URL_SECOND_BETTING_PROVIDER_N"), $body);
+            $response = $guzzleClient->post( env("LOGIN_URL_SECOND_BETTING_PROVIDER_N"), $body);
+
+            $errors = json_decode($response->getBody()->getContents());
+            if (property_exists($errors, "errors")) {
+                dump($errors->errors);
+                return false;
+            } else {
+                dump("logged in");
+                sleep(3);
+                return true;
+            }
 
         }
 
@@ -92,11 +102,13 @@ class User
 
             try {
                 $response = $guzzleClient->get(env("USER_LOGGED_IN_CHECK_SECOND_BETTING_PROVIDER_N"));
+
             } catch (\Throwable $e) {
                 return false;
             }
 
             // is he logged in
+            dump($response->getStatusCode());
             if ($response->getStatusCode() == 200) {
                 return true;
             } else {
