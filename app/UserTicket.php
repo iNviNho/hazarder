@@ -335,8 +335,7 @@ class UserTicket extends Model
             $ticketData = $this->getTicketData();
 
             try {
-                $resultClass = $ticketData->find("td[class=result-icon-cell]", 0)
-                    ->children[0]->getAttribute("class");
+                $resultClass = $ticketData->find("td[class=result-icon-cell]", 0)->children[0]->getAttribute("class");
             } catch(\Throwable $e) {
                 event(new UserLogEvent("Failed to check UserTicket with ID: " . $this->id, $this->user->id, $this->id));
                 return;
