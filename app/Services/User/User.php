@@ -26,7 +26,9 @@ class User
             return true;
         }
 
-        $guzzleClient = $this->getGuzzleForUserAndBP($userEntity, $bettingProviderID);
+        $guzzleClient = $this->getGuzzleForUserAndBP($userEntity, $bettingProviderID, [
+            "X-Requested-With" => "XMLHttpRequest",
+        ]);
 
         // login for first provider
         if ($bettingProviderID == BettingProvider::FIRST_PROVIDER_F) {
