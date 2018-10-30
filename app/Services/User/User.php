@@ -48,12 +48,21 @@ class User
         if ($bettingProviderID == BettingProvider::SECOND_PROVIDER_N) {
 
             //login
+            dump("logging in");
+            dump(json_encode([
+                "form_params" => [
+                    "meno" => $userEntity->getSettings($bettingProviderID)->first()->username,
+                    "heslo" => $userEntity->getSettings($bettingProviderID)->first()->password,
+                ]
+            ]));
             $body = [
                 "form_params" => [
                     "meno" => $userEntity->getSettings($bettingProviderID)->first()->username,
                     "heslo" => $userEntity->getSettings($bettingProviderID)->first()->password,
                 ]
             ];
+            dump("url");
+            dump(env("LOGIN_URL_SECOND_BETTING_PROVIDER_N"));
             $response = $guzzleClient->post( env("LOGIN_URL_SECOND_BETTING_PROVIDER_N"), $body);
 
             dump($response->getStatusCode());
@@ -106,6 +115,8 @@ class User
         if ($bettingProviderID == BettingProvider::SECOND_PROVIDER_N) {
 
             try {
+                dump("Checking if user is logged in");
+                dump(env("USER_LOGGED_IN_CHECK_SECOND_BETTING_PROVIDER_N"));
                 $response = $guzzleClient->get(env("USER_LOGGED_IN_CHECK_SECOND_BETTING_PROVIDER_N"));
 
             } catch (\Throwable $e) {
@@ -114,6 +125,7 @@ class User
 
             // is he logged in
             dump($response->getStatusCode());
+            dump(json_decode($response->getBody()->getContents()));
             if ($response->getStatusCode() == 200) {
                 return true;
             } else {
@@ -142,7 +154,7 @@ class User
             "http_errors" => false,
             'headers' => $header,
             "cookies" => $cookieJar,
-            'allow_redirects' => true
+            'allow_redirects' => false
         ]);
     }
 
