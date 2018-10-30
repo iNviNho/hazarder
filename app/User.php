@@ -276,7 +276,10 @@ class User extends Authenticatable
         if (!is_null($bettingProviderID)) {
             $settings["betting_provider_id"] = $bettingProviderID;
         }
-        $credit = Settings::where($settings)->selectRaw("sum(credit) as credit")->pluck("credit")->first();
+        $credit = Settings::where($settings)
+            ->selectRaw("sum(credit) as credit")
+            ->pluck("credit")
+            ->first();
 
         return $credit;
     }

@@ -43,6 +43,7 @@ class User
             ];
             $guzzleClient->post( env("LOGIN_URL_FIRST_BETTING_PROVIDER_F"), $body);
 
+            sleep(2);
         }
 
         // login for second provider
@@ -56,15 +57,9 @@ class User
             $body = [
                 RequestOptions::FORM_PARAMS => $loginParams
             ];
-            $response = $guzzleClient->post( env("LOGIN_URL_SECOND_BETTING_PROVIDER_N"), $body);
+            $guzzleClient->post( env("LOGIN_URL_SECOND_BETTING_PROVIDER_N"), $body);
 
-            $errors = json_decode($response->getBody()->getContents());
-            if (property_exists($errors, "errors")) {
-                return false;
-            } else {
-                return true;
-            }
-
+            sleep(2);
         }
 
         return $this->isLoggedIn($userEntity, $bettingProviderID);
