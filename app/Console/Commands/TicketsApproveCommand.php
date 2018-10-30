@@ -38,6 +38,7 @@ class TicketsApproveCommand extends Command
                 ->join('matches', 'matches.id', '=', 'tickets.match_id')
                 ->where("status", "=", "prepared")
                 ->where("betting_provider_id", "=", $bP->id)
+                ->where("game_type", "=", "marcingale")
                 ->where('date_of_game', '>=', Carbon::now()->addMinutes(15)->format("Y-m-d H:i:s"))
                 ->orderBy("date_of_game", "asc");
 
