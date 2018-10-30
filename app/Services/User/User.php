@@ -140,7 +140,7 @@ class User
             "http_errors" => false,
             'headers' => $header,
             "cookies" => $cookieJar,
-            'allow_redirects' => false
+            'allow_redirects' => true
         ]);
     }
 
