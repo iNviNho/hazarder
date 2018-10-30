@@ -206,16 +206,16 @@ class User extends Authenticatable
 
         } elseif ($bettingProviderID == BettingProvider::SECOND_PROVIDER_N) {
 
-            $user = new \App\Services\User\User($this);
+            $user = new \App\Services\User\User();
             if (!$user->login($this, $bettingProviderID)) {
                 event(new UserLogEvent("Failed login while updating credit for betting provider: " . $bettingProviderID, $this->id));
                 return;
             }
 
             $guzzleClient = $user->getGuzzleForUserAndBP($this, $bettingProviderID);
-            $response = $guzzleClient->get(env("BASE_URL_SECOND_PROVIDER"))->getBody()->getContents();
+            $response = $guzzleClient->get(env("BASE_URL_SECOND_PROVIDER_USER_INFO"));
 
-            $userData = json_decode($response);
+            $userData = json_decode($response->getBody()->getContents());
             $settings = $this->getSettings($bettingProviderID);
             $settings->credit = BC::convertScientificNotationToString($userData->user->credit);
             $settings->credit_update_time = Carbon::now();
