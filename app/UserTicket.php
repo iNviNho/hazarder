@@ -39,15 +39,15 @@ class UserTicket extends Model
             $externalTicketId = $this->external_ticket_id;
 
             // some weird pattern replace
-            $externalTicketId = str_replace("_", "%2F", $externalTicketId);
+            $externalTicketId = str_replace("%2F", "_", $externalTicketId);
+            $externalTicketId = str_replace("%2B", "-", $externalTicketId);
 
             $link = env("BASE_TICKET_SHOW") . $externalTicketId . "&kind=MAIN";
 
             return $link;
 
         } elseif ($bettingProviderID == BettingProvider::SECOND_PROVIDER_N) {
-
-            $externalTicketId = $this->external_ticket_id;
+          
 
             $link = env("BASE_TICKET_SHOW_SECOND_BETTING_PROVIDER") . $externalTicketId . "?lang=sk";
 
@@ -163,6 +163,7 @@ class UserTicket extends Model
             // BOOM BET
             $guzzleClient->post(env("BASE_TICKET_SUBMIT_URL") . $now, $data);
 
+
             // after successfull post request we should have this ticket bet
             $this->status = "bet";
 
@@ -173,17 +174,16 @@ class UserTicket extends Model
             $lastTicket = $ticketSummaryHtml->find("div[id=ticket-list]", 0)->children()[1];
             $externalTicketID = $lastTicket->getAttribute("href");
 
+            preg_match("/ticket_id=(.*?)kind=MAIN/", $externalTicketID, $results);
+          
             // by this check we can check if bet was successful, $externalTicketID will always be unique
-            $externalTicketExists = UserTicket::where("external_ticket_id", $externalTicketID)->first();
+            $externalTicketExists = UserTicket::where("external_ticket_id", $results[1])->first();
             if (!is_null($externalTicketExists)) {
                 $this->status = "approved";
                 $this->save();
 
                 throw new \Exception("Ticket already exists, probably failed bet for UserTicket: " . $this->id);
             }
-
-
-            preg_match("/ticket_id=(.*?)kind=MAIN/", $externalTicketID, $results);
 
             $this->external_ticket_id = $results[1];
 

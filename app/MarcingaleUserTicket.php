@@ -121,7 +121,7 @@ class MarcingaleUserTicket extends Model
     public static function getBetAmountForContinuousMarcingaleUserTicket(MarcingaleUserRound $marRound, $level, $bettingProviderID) {
 
         $startedAmountOfThisRound = $marRound->getMarcingaleUserTickets()->get()->last();
-
+      
         // did we even started?
         if (is_null($startedAmountOfThisRound)) {
             // if not, return just bet_amount from settings
