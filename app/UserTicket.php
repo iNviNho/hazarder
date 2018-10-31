@@ -359,7 +359,7 @@ class UserTicket extends Model
 
             if ($ticketData->status == "Lost") {
                 $this->loose();
-            } elseif ($ticketData->status == "Won") {
+            } elseif ($ticketData->status == "Won"  || ($ticketData->status == "PaidOut" && property_exists($ticketData, "winDate"))) {
                 $this->win();
             }
 
