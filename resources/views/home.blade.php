@@ -1,8 +1,8 @@
 @extends('layouts.app')
 
 @section('content')
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.min.js"></script>
 
 <div class="container my-container">
     <div class="row justify-content-center">
@@ -11,30 +11,63 @@
             <div class="basic-content" style="margin-bottom: 40px;">
                 <h3><span class="fas fa-smile-beam"></span> Welcome {{Auth::user()->name}}!</h3>
                 <div class="row" style="margin-top: 40px;">
-                    <div class="col-md-3">
-                        <ul class="list-group">
-                            <li class="list-group-item active"><h5>Credit</h5></li>
-                            <li class="list-group-item" style="font-size: 20px;">{{Auth::user()->getCredit()}}€</li>
-                        </ul>
-                    </div>
-                    <div class="col-md-3">
-                        <ul class="list-group">
-                            <li class="list-group-item active"><h5>Current bet amount</h5></li>
-                            <li class="list-group-item" style="font-size: 20px;">{{$currentBetAmount}}€</li>
-                        </ul>
-                    </div>
-                    <div class="col-md-3">
-                        <ul class="list-group">
-                            <li class="list-group-item active"><h5>Current possible win</h5></li>
-                            <li class="list-group-item" style="font-size: 20px;">{{$currentBetPossibleWin}}€</li>
-                        </ul>
-                    </div>
-                    <div class="col-md-3">
-                        <ul class="list-group">
-                            <li class="list-group-item active"><h5>Current possible clear win</h5></li>
-                            <li class="list-group-item" style="font-size: 20px;">{{$currentBetPossibleClearWin}}€</li>
-                        </ul>
-                    </div>
+                        <div class="col-md-3">
+                            <ul class="list-group">
+                                <li class="list-group-item active"><h5>Betting provider & Credit</h5></li>
+                                <li class="list-group-item" style="font-size: 20px;">
+                                    @foreach ($bettingProvidersInformation as $bpID => $bPI)
+                                        @if ($bpID == \App\BettingProvider::FIRST_PROVIDER_F)
+                                            <img width='25px' src='images/logo.png'>
+                                        @elseif ($bpID == \App\BettingProvider::SECOND_PROVIDER_N)
+                                            <img width='25px' src='images/logo2.jpg'>
+                                        @endif
+                                        <strong>{{\App\BettingProvider::find($bpID)->name}} </strong> - {{Auth::user()->getCredit($bpID)}}€
+                                        @if (!$loop->last)
+                                            <hr style="margin-top: 13px; margin-bottom: 7px;">
+                                        @endif
+                                    @endforeach
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-3">
+                            <ul class="list-group">
+                                <li class="list-group-item active"><h5>Current bet amount</h5></li>
+                                <li class="list-group-item" style="font-size: 20px;">
+                                    @foreach ($bettingProvidersInformation as $bpID => $bPI)
+                                        {{$bPI["currentBetAmount"]}}€
+                                        @if (!$loop->last)
+                                            <hr style="margin-top: 13px; margin-bottom: 7px;">
+                                        @endif
+                                    @endforeach
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-3">
+                            <ul class="list-group">
+                                <li class="list-group-item active"><h5>Current possible win</h5></li>
+                                <li class="list-group-item" style="font-size: 20px;">
+                                    @foreach ($bettingProvidersInformation as $bpID => $bPI)
+                                        {{$bPI["currentBetPossibleWin"]}}€
+                                        @if (!$loop->last)
+                                            <hr style="margin-top: 13px; margin-bottom: 7px;">
+                                        @endif
+                                    @endforeach
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-3">
+                            <ul class="list-group">
+                                <li class="list-group-item active"><h5>Current possible clear win</h5></li>
+                                <li class="list-group-item" style="font-size: 20px;">
+                                    @foreach ($bettingProvidersInformation as $bpID => $bPI)
+                                        {{$bPI["currentBetPossibleClearWin"]}}€
+                                        @if (!$loop->last)
+                                            <hr style="margin-top: 13px; margin-bottom: 7px;">
+                                        @endif
+                                    @endforeach
+                                </li>
+                            </ul>
+                        </div>
                 </div>
             </div>
 
@@ -109,24 +142,64 @@
 
 <script>
 
-    var configa = {
+    var configb = {
         type: 'line',
         data: {
             labels: [
-                @foreach ($betTicketsChartData as $i => $value)
-                    "{{$i}}",
+                @foreach ($betTicketsChartLabel as $i => $value)
+                    {{$value}},
                 @endforeach
             ],
-            datasets: [{
-                label: 'Portfolio performance',
-                borderColor: "red",
-                data: @php echo json_encode(array_values($betTicketsChartData)) @endphp,
-                fillColor: "rgba(151,249,190,0.5)",
-                strokeColor: "rgba(255,255,255,1)",
-                pointColor: "rgba(220,220,220,1)",
-                pointStrokeColor: "#fff",
-                fill: true
-            },]
+            datasets: [
+                {
+                    type: "line",
+                    label : "All",
+                    data: [
+                        @foreach ($allChartData as $timestamp => $point)
+                        {
+                            x: {{$timestamp}},
+                            y: {{$point}}
+                        },
+                        @endforeach
+                    ],
+                    borderColor: "red",
+                    fillColor: "rgba(151,249,190,0.5)",
+                    strokeColor: "rgba(255,255,255,1)",
+                    pointColor: "rgba(220,220,220,1)",
+                    pointStrokeColor: "#fff",
+                    borderWidth: 3,
+                    fill: true,
+                    lineTension: 0
+                },
+                @foreach ($betTicketsChartData as $bpID => $betData)
+                    {
+                    type: 'line',
+                    label: "@php echo \App\BettingProvider::find($bpID)->name; @endphp",
+                    data: [
+                        @foreach ($betData as $timestamp => $point)
+                            {
+                                x: {{$timestamp}},
+                                y: {{$point}}
+                            },
+                        @endforeach
+                    ],
+                    lineTension: 0,
+                    @if ($bpID == \App\BettingProvider::FIRST_PROVIDER_F)
+                    pointColor: "rgb(255, 205, 86)",
+                    pointStrokeColor: "rgb(255, 205, 86)",
+                    borderColor: 'rgb(255, 205, 86)',
+                    @elseif ($bpID == \App\BettingProvider::SECOND_PROVIDER_N)
+                    pointColor: "rgb(255, 159, 64)",
+                    pointStrokeColor: "rgb(255, 159, 64)",
+                    borderColor: 'rgb(255, 159, 64)',
+                    @endif
+                    borderWidth: 3,
+                    fill: false,
+                    hidden: true,
+                    {{--xAxisID: 'x-axis-{{$bpID}}',--}}
+                    },
+                @endforeach
+            ]
         },
         options: {
             responsive: true,
@@ -144,50 +217,27 @@
                     hitRadius: 20,
                     hoverRadius: 5,
                 }
+            },
+            scales: {
+                xAxes: [
+                    {
+                        ticks: {
+                            fontSize: 12,
+                            callback: function(label, index, labels) {
+                                var date = new Date(label * 1000);
+                                return date.getDate() + "." + date.getMonth() + "." + date.getFullYear() + " - " + date.getHours() + ":" + (date.getMinutes()<10?'0':'') + date.getMinutes();
+                            }
+                        }
+                    }
+                ]
             }
-        }
-    };
-
-    var configb = {
-        type: 'line',
-        data: {
-            labels: [
-                @foreach ($marcingaleRoundsChartData as $i => $value)
-                    "{{$i}}",
-                @endforeach
-            ],
-            datasets: [{
-                label: 'Marcingale round level finished by the time',
-                borderColor: "skyblue",
-                data: @php echo json_encode(array_values($marcingaleRoundsChartData)) @endphp,
-                fill: false,
-                backgroundColor: "grey",
-                borderWidth: "1"
-            },]
-        },
-        options: {
-            responsive: true,
-            hover: {
-                mode: 'nearest',
-                intersect: true
-            },
-            elements: { 
-                point: { 
-                    radius: 0,
-                    hitRadius: 10, 
-                    hoverRadius: 5,
-                } 
-            },
-            steppedLine: true
         }
     };
 
     window.onload = function() {
         var ctxa = document.getElementById('myChartA').getContext('2d');
-        window.myLine = new Chart(ctxa, configa);
+        window.myLine = new Chart(ctxa, configb);
 
-        // var ctxb = document.getElementById('myChartB').getContext('2d');
-        // window.myLine = new Chart(ctxb, configb);
     };
 
 </script>

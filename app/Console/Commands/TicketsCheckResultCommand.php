@@ -48,8 +48,8 @@ class TicketsCheckResultCommand extends Command
                 // get all bet user tickets
                 $userTickets = UserTicket::where("status", "=", "bet")
                     ->where("user_id", "=", $user->id)
-                    ->whereHas('ticket', function ($q) use($bP) {
-                        $q->whereHas("match", function ($q) use($bP) {
+                    ->whereHas('Ticket', function ($q) use($bP) {
+                        $q->whereHas("Match", function ($q) use($bP) {
                             $q->where("betting_provider_id","=", $bP->id);
                         });
                     });

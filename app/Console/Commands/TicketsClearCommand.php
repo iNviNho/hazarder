@@ -25,7 +25,7 @@ class TicketsClearCommand extends Command
 
         $this->info("We cancel tickets that were not bet and the game has already started");
 
-        $tickets = Ticket::whereHas('match', function ($q) {
+        $tickets = Ticket::whereHas('Match', function ($q) {
             $q->where('date_of_game', '<=', Carbon::now()->format("Y-m-d H:i:s"));
         })
         ->where("status", "!=", "canceled")

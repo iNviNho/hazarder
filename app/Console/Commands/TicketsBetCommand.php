@@ -44,8 +44,8 @@ class TicketsBetCommand extends Command
                 // get user tickets for this BP
                 $userTickets = UserTicket::where("status", "=", "approved")
                     ->where("user_id", "=", $user->id)
-                    ->whereHas('ticket', function ($q) use($bP) {
-                        $q->whereHas("match", function ($q) use($bP) {
+                    ->whereHas('Ticket', function ($q) use($bP) {
+                        $q->whereHas("Match", function ($q) use($bP) {
                             $q->where("betting_provider_id","=", $bP->id);
                         });
                     });

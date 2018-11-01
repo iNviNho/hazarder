@@ -50,9 +50,9 @@ class User extends Authenticatable
         // decrease allowed games to bet based on already bet games
         foreach (Ticket::$GAME_TYPES as $GAME_TYPE) {
 
-            $betTicketsCount = UserTicket::whereHas('ticket', function ($q) use($GAME_TYPE, $bettingProviderID) {
+            $betTicketsCount = UserTicket::whereHas('Ticket', function ($q) use($GAME_TYPE, $bettingProviderID) {
                     $q->where('game_type', '=', $GAME_TYPE); // concrete game_type
-                    $q->whereHas("match", function ($q) use($bettingProviderID) {
+                    $q->whereHas("Match", function ($q) use($bettingProviderID) {
                         $q->where("betting_provider_id", $bettingProviderID); // current betting provider
                     });
                 })
@@ -105,7 +105,7 @@ class User extends Authenticatable
 
                     // lets check if by any chance we don't have already bet on this match
                     // even if the odd is now on opposite match
-                    $alreadyBetOnMatchTimes = UserTicket::whereHas("ticket", function($q) use($ticket) {
+                    $alreadyBetOnMatchTimes = UserTicket::whereHas("Ticket", function($q) use($ticket) {
                             $q->where("match_id", $ticket->match_id);
                             $q->where("game_type", "marcingale");
                         })
