@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\BettingProvider;
 use App\Events\UserLogEvent;
 use App\MarcingaleUserRound;
 use App\MarcingaleUserTicket;
@@ -45,7 +46,8 @@ class MatchesController extends Controller
 
         $marcingaleUserRounds = MarcingaleUserRound::where([
             "user_id" => Auth::user()->id,
-            "status" => "failed"
+            "status" => "failed",
+            "betting_provider_id" => $match->betting_provider_id
         ]);
 
         return view("match.show",[
@@ -80,6 +82,20 @@ class MatchesController extends Controller
                 ->setLabel('ID')
                 ->setSortable(true)
                 ->setSorting("desc"),
+            (new FieldConfig())
+                ->setName('match')
+                ->setLabel('BP')
+                ->setCallback(function ($val, $row) {
+
+                    $alink = null;
+                    if ($row->getSrc()->betting_provider_id == BettingProvider::FIRST_PROVIDER_F) {
+                        $alink = "<img width='25px' src='images/logo.png'>";
+                    } elseif ($row->getSrc()->betting_provider_id == BettingProvider::SECOND_PROVIDER_N) {
+                        $alink = "<img width='25px' src='images/logo2.jpg'>";
+                    }
+
+                    return $alink;
+                }),
             (new FieldConfig())
                 ->setName('teama')
                 ->setLabel('TeamA')
@@ -195,7 +211,7 @@ class MatchesController extends Controller
 
             $doneLevels = 0;
             foreach ($marcingaleTicketRound->getMarcingaleUserTickets()->get() as $marTicket) {
-                if ($marTicket->userTicket()->first()->status != "canceled") {
+                if ($marTicket->userTicket->status != "canceled") {
                     $doneLevels++;
                 }
             }

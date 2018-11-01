@@ -69,6 +69,7 @@
                                     <hr>
 
                                     <h5>Bet user ticket</h5>
+                                    <p>Betting provider: <strong>{{\App\BettingProvider::find($match->betting_provider_id)->name}}</strong>     </p>
                                     <form action="/match/marcingale/continue" method="POST">
                                         @csrf
                                         <input type="hidden" name="match-id" value="{{$match->id}}">
