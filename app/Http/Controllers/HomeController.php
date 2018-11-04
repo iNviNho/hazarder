@@ -49,7 +49,7 @@ class HomeController extends Controller
             $from = Carbon::now()->subDays(7)->setTime(0, 0)->getTimestamp();
         }
         if (is_null($name)) {
-            $name = "last-7-days";
+            $name = "this-week";
         }
 
         $to = Carbon::now();
