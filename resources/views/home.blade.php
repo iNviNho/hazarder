@@ -94,7 +94,7 @@
                     <tr>
                         <td><h5 style="margin-bottom: 0px;" >Profit</h5></td>
                         <td><h5g style="margin-bottom: 0px;
-                            @if (\BCMathExtended\BC::comp($data["profit"], 0) < 0) color: green; @else color: green; @endif">{{$data["profit"]}}</h5g></td>
+                            @if (\BCMathExtended\BC::comp($data["profit"], 0) < 0) color: red; @else color: green; @endif">{{$data["profit"]}}</h5g></td>
                     </tr>
                     <tr>
                         <td>Bet tickets</td><td><strong>{{$data["bet_tickets"]}}</strong></td>
