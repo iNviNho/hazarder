@@ -24,6 +24,7 @@ use Nayjest\Grids\Components\TFoot;
 use Nayjest\Grids\Components\THead;
 use Nayjest\Grids\EloquentDataProvider;
 use Nayjest\Grids\FieldConfig;
+use Nayjest\Grids\FilterConfig;
 use Nayjest\Grids\Grid;
 use Nayjest\Grids\GridConfig;
 use Nayjest\Grids\SelectFilterConfig;
@@ -99,11 +100,21 @@ class MatchesController extends Controller
             (new FieldConfig())
                 ->setName('teama')
                 ->setLabel('TeamA')
-                ->setSortable(true),
+                ->setSortable(true)
+                ->addFilter(
+                    (new FilterConfig())
+                        ->setName('teama')
+                        ->setOperator(FilterConfig::OPERATOR_LIKE)
+                ),
             (new FieldConfig())
-                    ->setName('teamb')
-                    ->setLabel('TeamB')
-                    ->setSortable(true),
+                ->setName('teamb')
+                ->setLabel('TeamB')
+                ->setSortable(true)
+                ->addFilter(
+                    (new FilterConfig())
+                        ->setName('teamb')
+                        ->setOperator(FilterConfig::OPERATOR_LIKE)
+                ),
             (new FieldConfig())
                     ->setName('sport')
                     ->setLabel('Sport')
