@@ -33,6 +33,11 @@ class TicketsApproveCommand extends Command
                 continue;
             }
 
+            // can this betting provider run at this time?
+            if (!BettingProvider::isHisTime($bP->id)) {
+                continue;
+            }
+
             // prepare all tickets for this betting provider
             $tickets = Ticket::select(["tickets.*", "matches.date_of_game", "matches.betting_provider_id"])
                 ->join('matches', 'matches.id', '=', 'tickets.match_id')
