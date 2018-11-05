@@ -46,7 +46,7 @@ class HomeController extends Controller
         $name = $request->get("name");
 
         if (is_null($from)) {
-            $from = Carbon::now()->subDays(7)->setTime(0, 0)->getTimestamp();
+            $from = Carbon::now()->startOfWeek()->setTime(0, 0)->getTimestamp();
         }
         if (is_null($name)) {
             $name = "this-week";
