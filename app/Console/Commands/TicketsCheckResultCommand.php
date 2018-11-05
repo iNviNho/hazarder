@@ -34,6 +34,11 @@ class TicketsCheckResultCommand extends Command
                 continue;
             }
 
+            // can this betting provider run at this time?
+            if (!BettingProvider::isHisTime($bP->id)) {
+                continue;
+            }
+
             // then loop through users
             $users = User::all()
                 ->where("is_authorized", "=", "1");
