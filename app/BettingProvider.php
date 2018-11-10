@@ -18,12 +18,17 @@ class BettingProvider extends Model
 
     public static function isHisTime($bettingProviderID) {
 
-        $hour = (Carbon::now())->hour;
+        $now = Carbon::now();
+
+        // during weekend, both On
+        if ( $now->isWeekend() ) {
+            return true;
+        }
 
         if ($bettingProviderID == self::FIRST_PROVIDER_F) {
-            return BC::comp($hour, 16) >= 0;
+            return BC::comp($now->hour, 16) >= 0;
         } elseif ($bettingProviderID == self::SECOND_PROVIDER_N) {
-            return BC::comp($hour, 16) < 0;
+            return BC::comp($now->hour, 16) < 0;
         }
 
     }
